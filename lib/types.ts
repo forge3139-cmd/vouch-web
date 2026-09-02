@@ -43,6 +43,9 @@ export interface IdentityRow {
   headline: string | null
   location: string | null
   language: string | null
+  /** Not in the documented schema yet — needed for /w/[slug]. Add a unique
+   * text column on identities before this route can look anyone up. */
+  slug?: string | null
   created_at?: string
 }
 
@@ -78,4 +81,46 @@ export interface ConfirmationBundle {
   worker: IdentityRow
   confirmedSamples: Pick<RecordRow, 'id' | 'title' | 'role_title' | 'confirmed_at'>[]
   confirmedCount: number
+}
+
+export type WorkRequestStatus = 'pending' | 'accepted' | 'declined' | 'completed'
+
+export interface WorkRequestRow {
+  id: string
+  worker_id: string
+  slug_used: string
+  title: string
+  description: string | null
+  specifications: string | null
+  location: string | null
+  needed_by: string | null
+  client_name: string
+  client_phone: string
+  status: WorkRequestStatus
+  created_at: string
+}
+
+export interface WorkRequestPhotoRow {
+  id: string
+  work_request_id: string
+  file_url: string
+  media_type: string | null
+  created_at: string
+}
+
+/** From the identity_evidence view (vouch-schema.sql, shared with the
+ * mobile project) — read here to show a worker's evidence honestly. */
+export interface IdentityEvidenceRow {
+  identity_id: string
+  records_confirmed: number
+  distinct_confirmers: number
+  repeat_clients: number
+  last_confirmed_at: string | null
+  both_side_confirmed: number
+}
+
+/** Everything the /w/[slug] request page needs, assembled server-side. */
+export interface WorkerRequestBundle {
+  worker: IdentityRow
+  evidence: IdentityEvidenceRow | null
 }
