@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useMemo } from 'react'
 import { useT } from '@/components/LanguageContext'
 import Button from '@/components/ui/Button'
 import type { RequestDraft } from '@/components/WorkRequestFlow'
@@ -14,6 +15,17 @@ export default function RequestDetailsStep({
   onNext: () => void
 }) {
   const t = useT()
+
+  // Derived straight from draft.photos rather than synced into its own
+  // state — object URLs are only valid client-side and leak memory if not
+  // revoked, so the effect below only handles that cleanup.
+  const previewUrls = useMemo(() => draft.photos.map((file) => URL.createObjectURL(file)), [draft.photos])
+
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [previewUrls])
 
   const canAdvance =
     draft.title.trim().length > 0 && draft.description.trim().length > 0 && draft.location.trim().length > 0
@@ -83,21 +95,27 @@ export default function RequestDetailsStep({
             className="w-full rounded-2xl border border-dashed border-card-border bg-white p-4 text-sm text-ink"
           />
           {draft.photos.length > 0 && (
-            <ul className="mt-2 space-y-1">
+            <div className="mt-3 flex flex-wrap gap-3">
               {draft.photos.map((photo, i) => (
-                <li key={`${photo.name}-${i}`} className="flex items-center justify-between gap-3 text-xs text-muted">
-                  <span className="truncate">{photo.name}</span>
+                <div
+                  key={`${photo.name}-${i}`}
+                  className="relative h-20 w-20 overflow-hidden rounded-xl border border-card-border bg-white"
+                >
+                  {previewUrls[i] && (
+                    // eslint-disable-next-line @next/next/no-img-element -- blob: object URL, not an optimizable remote/static image
+                    <img src={previewUrls[i]} alt="" className="h-full w-full object-cover" />
+                  )}
                   <button
                     type="button"
                     onClick={() => removePhoto(i)}
-                    className="font-bold text-orange"
                     aria-label="Remove photo"
+                    className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ink/70 text-xs font-bold text-white"
                   >
                     ×
                   </button>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </fieldset>
 

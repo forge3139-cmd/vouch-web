@@ -29,17 +29,20 @@ export default function RequestContactStep({
     setPending(true)
     setError(null)
 
-    const result = await submitWorkRequestAction({
-      slug,
-      title: draft.title,
-      description: draft.description,
-      specifications: draft.specifications,
-      location: draft.location,
-      neededBy: draft.neededBy,
-      clientName,
-      clientPhone,
-      photos: draft.photos,
-    })
+    const formData = new FormData()
+    formData.set('slug', slug)
+    formData.set('title', draft.title)
+    formData.set('description', draft.description)
+    formData.set('specifications', draft.specifications)
+    formData.set('location', draft.location)
+    formData.set('neededBy', draft.neededBy)
+    formData.set('clientName', clientName)
+    formData.set('clientPhone', clientPhone)
+    for (const photo of draft.photos) {
+      formData.append('photos', photo)
+    }
+
+    const result = await submitWorkRequestAction(formData)
 
     setPending(false)
 
