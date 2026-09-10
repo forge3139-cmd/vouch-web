@@ -1,7 +1,13 @@
 'use server'
 
 import { getSupabaseServerClient } from './supabase'
-import type { ConfirmationInsert } from './types'
+import type { ConfirmationInsert, DisputeInsert } from './types'
+
+const paymentStatusToClientAnswer: Record<string, string> = {
+  paid: 'yes',
+  unpaid: 'not_yet',
+  partial: 'partly',
+}
 
 async function getValidOpenLink(token: string) {
   const supabase = getSupabaseServerClient()
@@ -69,6 +75,11 @@ export async function submitConfirmationAction(
     wouldWorkAgainRaw === 'yes' || wouldWorkAgainRaw === 'maybe' || wouldWorkAgainRaw === 'no'
       ? wouldWorkAgainRaw
       : null
+  const clientPaymentStatusRaw = String(formData.get('clientPaymentStatus') ?? '')
+  const clientPaymentStatus =
+    clientPaymentStatusRaw === 'yes' || clientPaymentStatusRaw === 'not_yet' || clientPaymentStatusRaw === 'partly'
+      ? clientPaymentStatusRaw
+      : null
   const photo = formData.get('photo')
 
   const records = () => supabase.from('records') as any
@@ -96,13 +107,41 @@ export async function submitConfirmationAction(
     rating_communication: rating,
     rating_timeliness: rating,
     comment: null,
+    client_payment_status: clientPaymentStatus,
   }
 
-  await (supabase.from('confirmations') as any).insert(confirmation)
+  const { data: insertedConfirmation } = await (supabase.from('confirmations') as any)
+    .insert(confirmation)
+    .select('id')
+    .single()
 
   await records()
     .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
     .eq('id', link.record_id)
+
+  if (clientPaymentStatus) {
+    const { data: paymentRecord } = await supabase
+      .from('records')
+      .select('payment_status')
+      .eq('id', link.record_id)
+      .maybeSingle<{ payment_status: string | null }>()
+
+    const workerAnswer = paymentRecord?.payment_status
+      ? paymentStatusToClientAnswer[paymentRecord.payment_status]
+      : null
+
+    if (workerAnswer && workerAnswer !== clientPaymentStatus) {
+      const dispute: DisputeInsert = {
+        record_id: link.record_id,
+        confirmation_id: insertedConfirmation?.id ?? null,
+        raised_by: null,
+        reason_code: 'payment_mismatch',
+        explanation: `Worker recorded "${paymentRecord?.payment_status}", client answered "${clientPaymentStatus}".`,
+        status: 'open',
+      }
+      await (supabase.from('disputes') as any).insert(dispute)
+    }
+  }
 
   if (photo instanceof File && photo.size > 0) {
     const path = `${link.record_id}/confirmer-${Date.now()}-${photo.name}`

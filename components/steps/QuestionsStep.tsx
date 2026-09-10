@@ -7,7 +7,7 @@ import RadioPills from '@/components/ui/RadioPills'
 import StarRating from '@/components/ui/StarRating'
 import { logStep, submitConfirmationAction, type SubmitConfirmationResult } from '@/lib/actions'
 
-const STEP_NAMES = ['did_happen', 'what', 'when', 'completed', 'rating', 'work_again', 'photo']
+const STEP_NAMES = ['did_happen', 'what', 'when', 'completed', 'rating', 'paid', 'work_again', 'photo']
 
 const initialState: SubmitConfirmationResult = { ok: false, confirmedCount: 0 }
 
@@ -29,6 +29,7 @@ export default function QuestionsStep({
   const [whenMonth, setWhenMonth] = useState('')
   const [wasCompleted, setWasCompleted] = useState<'yes' | 'partly' | null>(null)
   const [rating, setRating] = useState(0)
+  const [clientPaymentStatus, setClientPaymentStatus] = useState<'yes' | 'not_yet' | 'partly' | null>(null)
   const [wouldWorkAgain, setWouldWorkAgain] = useState<'yes' | 'maybe' | 'no' | null>(null)
 
   const [state, formAction, pending] = useActionState(submitConfirmationAction, initialState)
@@ -50,7 +51,8 @@ export default function QuestionsStep({
     (subStep === 2 && whenMonth.length > 0) ||
     (subStep === 3 && wasCompleted !== null) ||
     (subStep === 4 && rating > 0) ||
-    (subStep === 5 && wouldWorkAgain !== null)
+    (subStep === 5 && clientPaymentStatus !== null) ||
+    (subStep === 6 && wouldWorkAgain !== null)
 
   return (
     <form action={formAction} className="flex min-h-dvh flex-col px-6 py-10">
@@ -61,6 +63,7 @@ export default function QuestionsStep({
       <input type="hidden" name="whenMonth" value={whenMonth} />
       <input type="hidden" name="wasCompleted" value={wasCompleted ?? ''} />
       <input type="hidden" name="rating" value={rating} />
+      <input type="hidden" name="clientPaymentStatus" value={clientPaymentStatus ?? ''} />
       <input type="hidden" name="wouldWorkAgain" value={wouldWorkAgain ?? ''} />
 
       <div className="mb-6 h-1 w-full overflow-hidden rounded-full bg-card-border">
@@ -145,6 +148,23 @@ export default function QuestionsStep({
         {subStep === 5 && (
           <fieldset>
             <legend className="mb-4 text-xl font-bold text-ink">
+              {t('questions', 'paidTitle')}
+            </legend>
+            <RadioPills
+              options={[
+                { value: 'yes', label: t('questions', 'paidYes') },
+                { value: 'not_yet', label: t('questions', 'paidNotYet') },
+                { value: 'partly', label: t('questions', 'paidPartly') },
+              ]}
+              value={clientPaymentStatus}
+              onChange={setClientPaymentStatus}
+            />
+          </fieldset>
+        )}
+
+        {subStep === 6 && (
+          <fieldset>
+            <legend className="mb-4 text-xl font-bold text-ink">
               {t('questions', 'workAgainTitle')}
             </legend>
             <RadioPills
@@ -159,7 +179,7 @@ export default function QuestionsStep({
           </fieldset>
         )}
 
-        {subStep === 6 && (
+        {subStep === 7 && (
           <fieldset>
             <legend className="mb-1 text-xl font-bold text-ink">
               {t('questions', 'photoTitle')}

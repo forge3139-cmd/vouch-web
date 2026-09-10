@@ -63,6 +63,22 @@ export interface ConfirmationInsert {
   rating_communication: number | null
   rating_timeliness: number | null
   comment: string | null
+  /** Not in the documented schema yet — the client's own answer to "Did you
+   * pay for this work?", stored separately from the worker's
+   * `records.payment_status` on purpose so the two can be compared. */
+  client_payment_status?: 'yes' | 'not_yet' | 'partly' | null
+}
+
+/** Uses the existing `disputes` table (vouch-schema.sql) rather than a new
+ * flag column — a payment_mismatch dispute is raised, never auto-resolved,
+ * so it just sits there as `status: 'open'` until a human looks at it. */
+export interface DisputeInsert {
+  record_id: string
+  confirmation_id: string | null
+  raised_by: string | null
+  reason_code: string
+  explanation: string | null
+  status: 'open' | 'resolved'
 }
 
 export interface ProofInsert {
