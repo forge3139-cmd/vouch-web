@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button'
 import RadioPills from '@/components/ui/RadioPills'
 import StarRating from '@/components/ui/StarRating'
 import { logStep, submitConfirmationAction, type SubmitConfirmationResult } from '@/lib/actions'
+import { compressImage } from '@/lib/compressImage'
 
 const STEP_NAMES = ['did_happen', 'what', 'when', 'completed', 'rating', 'paid', 'work_again', 'photo']
 
@@ -31,8 +32,27 @@ export default function QuestionsStep({
   const [rating, setRating] = useState(0)
   const [clientPaymentStatus, setClientPaymentStatus] = useState<'yes' | 'not_yet' | 'partly' | null>(null)
   const [wouldWorkAgain, setWouldWorkAgain] = useState<'yes' | 'maybe' | 'no' | null>(null)
+  const [photoCompressing, setPhotoCompressing] = useState(false)
 
   const [state, formAction, pending] = useActionState(submitConfirmationAction, initialState)
+
+  // The photo <input> is uncontrolled and submitted straight through the
+  // form's native FormData — compressing here means swapping its FileList
+  // in place via DataTransfer so the compressed file is what actually gets
+  // submitted, without switching this off the useActionState form pattern.
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoCompressing(true)
+    try {
+      const compressed = await compressImage(file)
+      const dataTransfer = new DataTransfer()
+      dataTransfer.items.add(compressed)
+      e.target.files = dataTransfer.files
+    } finally {
+      setPhotoCompressing(false)
+    }
+  }
 
   useEffect(() => {
     logStep(token, STEP_NAMES[subStep])
@@ -193,8 +213,11 @@ export default function QuestionsStep({
               name="photo"
               accept="image/*"
               capture="environment"
-              className="w-full rounded-2xl border border-dashed border-card-border bg-white p-4 text-sm text-ink"
+              disabled={photoCompressing}
+              onChange={handlePhotoChange}
+              className="w-full rounded-2xl border border-dashed border-card-border bg-white p-4 text-sm text-ink disabled:opacity-60"
             />
+            {photoCompressing && <p className="mt-2 text-xs text-muted">Compressing…</p>}
           </fieldset>
         )}
       </div>
@@ -212,7 +235,7 @@ export default function QuestionsStep({
             {t('questions', 'next')}
           </Button>
         ) : (
-          <Button type="submit" disabled={pending} className="flex-1">
+          <Button type="submit" disabled={pending || photoCompressing} className="flex-1">
             {pending ? t('questions', 'submitting') : t('questions', 'submit')}
           </Button>
         )}

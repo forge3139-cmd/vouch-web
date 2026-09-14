@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useT } from '@/components/LanguageContext'
 import Button from '@/components/ui/Button'
+import { compressImage } from '@/lib/compressImage'
 import type { RequestDraft } from '@/components/WorkRequestFlow'
 
 export default function RequestDetailsStep({
@@ -15,6 +16,7 @@ export default function RequestDetailsStep({
   onNext: () => void
 }) {
   const t = useT()
+  const [compressing, setCompressing] = useState(false)
 
   // Derived straight from draft.photos rather than synced into its own
   // state — object URLs are only valid client-side and leak memory if not
@@ -34,10 +36,18 @@ export default function RequestDetailsStep({
     onChange({ ...draft, [key]: value })
   }
 
-  function handlePhotos(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotos(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files ? Array.from(e.target.files) : []
-    set('photos', [...draft.photos, ...files])
     e.target.value = ''
+    if (files.length === 0) return
+
+    setCompressing(true)
+    try {
+      const compressed = await Promise.all(files.map(compressImage))
+      set('photos', [...draft.photos, ...compressed])
+    } finally {
+      setCompressing(false)
+    }
   }
 
   function removePhoto(index: number) {
@@ -91,9 +101,11 @@ export default function RequestDetailsStep({
             accept="image/*"
             capture="environment"
             multiple
+            disabled={compressing}
             onChange={handlePhotos}
-            className="w-full rounded-2xl border border-dashed border-card-border bg-white p-4 text-sm text-ink"
+            className="w-full rounded-2xl border border-dashed border-card-border bg-white p-4 text-sm text-ink disabled:opacity-60"
           />
+          {compressing && <p className="mt-2 text-xs text-muted">Compressing…</p>}
           {draft.photos.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-3">
               {draft.photos.map((photo, i) => (
