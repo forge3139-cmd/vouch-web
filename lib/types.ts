@@ -1,3 +1,5 @@
+import type { Category } from './categories'
+
 export type ConfirmerType = 'client' | 'employer' | 'colleague' | 'teacher' | 'institution'
 export type RecordStatus = 'submitted' | 'confirmed'
 export type IdentityKind = 'person' | 'organisation'
@@ -43,9 +45,11 @@ export interface IdentityRow {
   headline: string | null
   location: string | null
   language: string | null
-  /** Not in the documented schema yet — needed for /w/[slug]. Add a unique
-   * text column on identities before this route can look anyone up. */
-  slug?: string | null
+  slug: string | null
+  /** Coarse trade bucket powering the public directory's category chips —
+   * separate from `headline`, which stays free text. Null until a worker
+   * (or a future edit-profile flow) sets one. */
+  category: Category | null
   created_at?: string
 }
 
