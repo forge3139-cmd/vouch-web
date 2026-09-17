@@ -43,7 +43,9 @@ export interface IdentityRow {
   kind: IdentityKind
   display_name: string
   headline: string | null
+  bio: string | null
   location: string | null
+  avatar_url: string | null
   language: string | null
   slug: string | null
   /** Coarse trade bucket powering the public directory's category chips —
@@ -92,6 +94,32 @@ export interface ProofInsert {
   file_url: string
   media_type: string
   caption: string | null
+}
+
+export interface ProofRow extends ProofInsert {
+  id: string
+  created_at: string
+}
+
+/** Read-shape counterpart to ConfirmationInsert, for rendering a worker's
+ * confirmed-work list on the public profile page. */
+export interface ConfirmationRow {
+  id: string
+  record_id: string
+  confirmer_id: string | null
+  confirmer_name: string | null
+  confirmer_contact: string | null
+  strength: number
+  work_happened: boolean
+  delivered_on_time: boolean | null
+  would_work_again: 'yes' | 'maybe' | 'no' | null
+  rating_reliability: number | null
+  rating_quality: number | null
+  rating_communication: number | null
+  rating_timeliness: number | null
+  comment: string | null
+  client_payment_status: 'yes' | 'not_yet' | 'partly' | null
+  created_at: string
 }
 
 /** Everything the confirmation page needs, assembled server-side. */
