@@ -23,6 +23,10 @@ export async function submitWorkRequestAction(formData: FormData): Promise<Submi
   const description = String(formData.get('description') ?? '')
   const specifications = String(formData.get('specifications') ?? '')
   const location = String(formData.get('location') ?? '')
+  const locationLatRaw = formData.get('locationLat')
+  const locationLngRaw = formData.get('locationLng')
+  const locationLat = typeof locationLatRaw === 'string' && locationLatRaw ? Number(locationLatRaw) : null
+  const locationLng = typeof locationLngRaw === 'string' && locationLngRaw ? Number(locationLngRaw) : null
   const neededBy = String(formData.get('neededBy') ?? '')
   const clientName = String(formData.get('clientName') ?? '')
   const clientPhone = String(formData.get('clientPhone') ?? '')
@@ -52,6 +56,8 @@ export async function submitWorkRequestAction(formData: FormData): Promise<Submi
       description: description.trim() || null,
       specifications: specifications.trim() || null,
       location: location.trim() || null,
+      location_lat: Number.isFinite(locationLat) ? locationLat : null,
+      location_lng: Number.isFinite(locationLng) ? locationLng : null,
       needed_by: neededBy || null,
       client_name: clientName.trim(),
       client_phone: clientPhone.trim(),

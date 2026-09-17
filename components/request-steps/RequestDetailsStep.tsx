@@ -4,7 +4,17 @@ import { useEffect, useMemo, useState } from 'react'
 import { useT } from '@/components/LanguageContext'
 import Button from '@/components/ui/Button'
 import { compressImage } from '@/lib/compressImage'
+import { reverseGeocodeAction } from '@/lib/geocodeActions'
 import type { RequestDraft } from '@/components/WorkRequestFlow'
+
+function PinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.3" />
+    </svg>
+  )
+}
 
 export default function RequestDetailsStep({
   draft,
@@ -17,6 +27,8 @@ export default function RequestDetailsStep({
 }) {
   const t = useT()
   const [compressing, setCompressing] = useState(false)
+  const [locating, setLocating] = useState(false)
+  const [locationNote, setLocationNote] = useState<string | null>(null)
 
   // Derived straight from draft.photos rather than synced into its own
   // state — object URLs are only valid client-side and leak memory if not
@@ -52,6 +64,46 @@ export default function RequestDetailsStep({
 
   function removePhoto(index: number) {
     set('photos', draft.photos.filter((_, i) => i !== index))
+  }
+
+  function handleUseLocation() {
+    setLocationNote(null)
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setLocationNote(t('request', 'locationErrorUnsupported'))
+      return
+    }
+
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+        let address: string | null = null
+        try {
+          address = await reverseGeocodeAction(latitude, longitude)
+        } catch {
+          address = null
+        }
+
+        onChange({
+          ...draft,
+          location: address ?? draft.location,
+          locationLat: latitude,
+          locationLng: longitude,
+        })
+        if (!address) setLocationNote(t('request', 'locationFoundNoAddress'))
+        setLocating(false)
+      },
+      (error) => {
+        setLocating(false)
+        setLocationNote(
+          error.code === error.PERMISSION_DENIED
+            ? t('request', 'locationErrorDenied')
+            : t('request', 'locationErrorGeneric')
+        )
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
   }
 
   return (
@@ -133,11 +185,22 @@ export default function RequestDetailsStep({
 
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-ink">{t('request', 'locationLabel')}</legend>
+          <button
+            type="button"
+            onClick={handleUseLocation}
+            disabled={locating}
+            className="mb-2 flex items-center gap-2 rounded-2xl border border-card-border bg-white px-4 py-3 text-sm font-bold text-orange disabled:opacity-60"
+          >
+            <PinIcon />
+            {locating ? t('request', 'locating') : t('request', 'useCurrentLocation')}
+          </button>
+          {locationNote && <p className="mb-2 text-xs font-semibold text-muted">{locationNote}</p>}
           <input
             value={draft.location}
             onChange={(e) => set('location', e.target.value)}
             className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
           />
+          <p className="mt-2 text-xs text-muted">{t('request', 'locationHint')}</p>
         </fieldset>
 
         <fieldset>

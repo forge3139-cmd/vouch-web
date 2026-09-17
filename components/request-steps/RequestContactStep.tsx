@@ -35,6 +35,8 @@ export default function RequestContactStep({
     formData.set('description', draft.description)
     formData.set('specifications', draft.specifications)
     formData.set('location', draft.location)
+    if (draft.locationLat !== null) formData.set('locationLat', String(draft.locationLat))
+    if (draft.locationLng !== null) formData.set('locationLng', String(draft.locationLng))
     formData.set('neededBy', draft.neededBy)
     formData.set('clientName', clientName)
     formData.set('clientPhone', clientPhone)

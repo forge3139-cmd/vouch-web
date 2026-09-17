@@ -141,6 +141,12 @@ export interface WorkRequestRow {
   description: string | null
   specifications: string | null
   location: string | null
+  /** Not in the documented schema yet — captured via the browser
+   * geolocation button alongside the free-text `location`. Run
+   * `alter table work_requests add column location_lat double precision;`
+   * and the same for `location_lng` before these persist. */
+  location_lat: number | null
+  location_lng: number | null
   needed_by: string | null
   client_name: string
   client_phone: string

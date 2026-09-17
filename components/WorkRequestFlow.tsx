@@ -16,6 +16,8 @@ export interface RequestDraft {
   description: string
   specifications: string
   location: string
+  locationLat: number | null
+  locationLng: number | null
   neededBy: string
   photos: File[]
 }
@@ -25,6 +27,8 @@ const emptyDraft: RequestDraft = {
   description: '',
   specifications: '',
   location: '',
+  locationLat: null,
+  locationLng: null,
   neededBy: '',
   photos: [],
 }
