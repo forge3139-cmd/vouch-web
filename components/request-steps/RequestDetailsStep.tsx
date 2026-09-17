@@ -96,13 +96,26 @@ export default function RequestDetailsStep({
       },
       (error) => {
         setLocating(false)
+        // PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT — logged with
+        // the raw code because "could not get your location" alone gave no
+        // way to tell an indoor GPS timeout from a denied prompt.
+        console.error('[RequestDetailsStep] getCurrentPosition failed', { code: error.code, message: error.message })
         setLocationNote(
           error.code === error.PERMISSION_DENIED
             ? t('request', 'locationErrorDenied')
-            : t('request', 'locationErrorGeneric')
+            : error.code === error.POSITION_UNAVAILABLE
+              ? t('request', 'locationErrorUnavailable')
+              : error.code === error.TIMEOUT
+                ? t('request', 'locationErrorTimeout')
+                : t('request', 'locationErrorGeneric')
         )
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      // A tight, high-accuracy request is exactly what stalls indoors on
+      // Android — GPS can't get a fix and there's no fallback within the
+      // timeout. Network-based location resolves in seconds and is plenty
+      // precise for an address, and a cached fix from the last minute is
+      // fine too rather than forcing a fresh read every time.
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 }
     )
   }
 
