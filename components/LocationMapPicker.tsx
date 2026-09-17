@@ -101,8 +101,8 @@ export default function LocationMapPicker({
   }, [])
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-card-border">
-      <div ref={containerRef} className="h-64 w-full bg-card-border" />
+    <div className="h-full w-full overflow-hidden rounded-2xl border border-card-border">
+      <div ref={containerRef} className="h-full w-full bg-card-border" />
     </div>
   )
 }

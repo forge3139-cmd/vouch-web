@@ -1,26 +1,19 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import dynamic from 'next/dynamic'
 import { useT } from '@/components/LanguageContext'
 import Button from '@/components/ui/Button'
+import MapPickerSheet from '@/components/MapPickerSheet'
 import { compressImage } from '@/lib/compressImage'
+import { reverseGeocodeAction } from '@/lib/geocodeActions'
 import type { RequestDraft } from '@/components/WorkRequestFlow'
 
-// Leaflet is a dependency nothing else on this form needs — next/dynamic
-// with ssr:false keeps it out of the main bundle and out of the server
-// render entirely, only fetched once this fieldset actually mounts.
-const LocationMapPicker = dynamic(() => import('@/components/LocationMapPicker'), {
-  ssr: false,
-  loading: () => <MapPlaceholder />,
-})
-
-function MapPlaceholder() {
-  const t = useT()
+function PinIcon() {
   return (
-    <div className="flex h-64 w-full items-center justify-center rounded-2xl border border-card-border bg-card-border text-sm font-semibold text-muted">
-      {t('request', 'mapLoading')}
-    </div>
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.3" />
+    </svg>
   )
 }
 
@@ -35,7 +28,9 @@ export default function RequestDetailsStep({
 }) {
   const t = useT()
   const [compressing, setCompressing] = useState(false)
+  const [locating, setLocating] = useState(false)
   const [locationNote, setLocationNote] = useState<string | null>(null)
+  const [mapSheetOpen, setMapSheetOpen] = useState(false)
 
   // Derived straight from draft.photos rather than synced into its own
   // state — object URLs are only valid client-side and leak memory if not
@@ -73,7 +68,10 @@ export default function RequestDetailsStep({
     set('photos', draft.photos.filter((_, i) => i !== index))
   }
 
-  function handleLocationChange(newLat: number, newLng: number, address: string | null) {
+  // Shared by both the button and the map sheet — coordinates are stored
+  // either way, and the address field is filled from whatever place name
+  // comes back, but stays fully editable afterward either way.
+  function applyLocation(newLat: number, newLng: number, address: string | null) {
     onChange({
       ...draft,
       location: address ?? draft.location,
@@ -81,6 +79,54 @@ export default function RequestDetailsStep({
       locationLng: newLng,
     })
     setLocationNote(address ? null : t('request', 'locationFoundNoAddress'))
+  }
+
+  function handleUseCurrentLocation() {
+    setLocationNote(null)
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setLocationNote(t('request', 'locationErrorUnsupported'))
+      return
+    }
+
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+        let address: string | null = null
+        try {
+          address = await reverseGeocodeAction(latitude, longitude)
+        } catch {
+          address = null
+        }
+        applyLocation(latitude, longitude, address)
+        setLocating(false)
+      },
+      (error) => {
+        setLocating(false)
+        // PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT — logged with
+        // the raw code so "could not get your location" isn't the only
+        // signal we have when this fails.
+        console.error('[RequestDetailsStep] getCurrentPosition failed', { code: error.code, message: error.message })
+        setLocationNote(
+          error.code === error.PERMISSION_DENIED
+            ? t('request', 'locationErrorDenied')
+            : error.code === error.POSITION_UNAVAILABLE
+              ? t('request', 'locationErrorUnavailable')
+              : error.code === error.TIMEOUT
+                ? t('request', 'locationErrorTimeout')
+                : t('request', 'locationErrorGeneric')
+        )
+      },
+      // Network-based location resolves in seconds and is plenty precise
+      // for an address — a tight, high-accuracy GPS request is exactly
+      // what stalls indoors. A cached fix from the last minute is fine too.
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 }
+    )
+  }
+
+  function handleMapLocationChange(newLat: number, newLng: number, address: string | null) {
+    applyLocation(newLat, newLng, address)
   }
 
   return (
@@ -162,11 +208,22 @@ export default function RequestDetailsStep({
 
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-ink">{t('request', 'locationLabel')}</legend>
-          <LocationMapPicker
-            lat={draft.locationLat}
-            lng={draft.locationLng}
-            onLocationChange={handleLocationChange}
-          />
+          <button
+            type="button"
+            onClick={handleUseCurrentLocation}
+            disabled={locating}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-orange py-4 text-sm font-bold text-white disabled:opacity-60"
+          >
+            <PinIcon />
+            {locating ? t('request', 'locating') : t('request', 'useCurrentLocation')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapSheetOpen(true)}
+            className="mt-2 w-full text-center text-xs font-semibold text-muted underline underline-offset-2"
+          >
+            {t('request', 'pickOnMap')}
+          </button>
           {locationNote && <p className="mt-2 text-xs font-semibold text-muted">{locationNote}</p>}
           <input
             value={draft.location}
@@ -195,6 +252,14 @@ export default function RequestDetailsStep({
           {t('request', 'next')}
         </Button>
       </div>
+
+      <MapPickerSheet
+        open={mapSheetOpen}
+        lat={draft.locationLat}
+        lng={draft.locationLng}
+        onClose={() => setMapSheetOpen(false)}
+        onLocationChange={handleMapLocationChange}
+      />
     </div>
   )
 }
