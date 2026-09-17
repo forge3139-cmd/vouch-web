@@ -2,11 +2,12 @@ import 'server-only'
 
 /**
  * Reverse-geocodes via OpenStreetMap's Nominatim — free, no API key, which
- * matches this app's near-zero-dependency approach. Done server-side (not
- * a direct client fetch) so we control the identifying User-Agent Nominatim's
- * usage policy requires, and so a slow/failed lookup never blocks the form
- * on a third-party outage — callers treat a null return as "couldn't
- * geocode, coordinates are still fine on their own."
+ * matches this app's near-zero-dependency approach (and the map itself is
+ * Leaflet + OSM tiles for the same reason). Done server-side (not a direct
+ * client fetch) so we control the identifying User-Agent Nominatim's usage
+ * policy requires, and so a slow/failed lookup never blocks the form on a
+ * third-party outage — callers treat a null return as "couldn't geocode,
+ * the pin and its coordinates are still fine on their own."
  */
 export async function reverseGeocode(lat: number, lon: number): Promise<string | null> {
   try {

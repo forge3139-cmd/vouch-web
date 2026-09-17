@@ -1,18 +1,26 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useT } from '@/components/LanguageContext'
 import Button from '@/components/ui/Button'
 import { compressImage } from '@/lib/compressImage'
-import { reverseGeocodeAction } from '@/lib/geocodeActions'
 import type { RequestDraft } from '@/components/WorkRequestFlow'
 
-function PinIcon() {
+// Leaflet is a dependency nothing else on this form needs — next/dynamic
+// with ssr:false keeps it out of the main bundle and out of the server
+// render entirely, only fetched once this fieldset actually mounts.
+const LocationMapPicker = dynamic(() => import('@/components/LocationMapPicker'), {
+  ssr: false,
+  loading: () => <MapPlaceholder />,
+})
+
+function MapPlaceholder() {
+  const t = useT()
   return (
-    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
-      <circle cx="12" cy="9.5" r="2.3" />
-    </svg>
+    <div className="flex h-64 w-full items-center justify-center rounded-2xl border border-card-border bg-card-border text-sm font-semibold text-muted">
+      {t('request', 'mapLoading')}
+    </div>
   )
 }
 
@@ -27,7 +35,6 @@ export default function RequestDetailsStep({
 }) {
   const t = useT()
   const [compressing, setCompressing] = useState(false)
-  const [locating, setLocating] = useState(false)
   const [locationNote, setLocationNote] = useState<string | null>(null)
 
   // Derived straight from draft.photos rather than synced into its own
@@ -66,57 +73,14 @@ export default function RequestDetailsStep({
     set('photos', draft.photos.filter((_, i) => i !== index))
   }
 
-  function handleUseLocation() {
-    setLocationNote(null)
-
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setLocationNote(t('request', 'locationErrorUnsupported'))
-      return
-    }
-
-    setLocating(true)
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords
-        let address: string | null = null
-        try {
-          address = await reverseGeocodeAction(latitude, longitude)
-        } catch {
-          address = null
-        }
-
-        onChange({
-          ...draft,
-          location: address ?? draft.location,
-          locationLat: latitude,
-          locationLng: longitude,
-        })
-        if (!address) setLocationNote(t('request', 'locationFoundNoAddress'))
-        setLocating(false)
-      },
-      (error) => {
-        setLocating(false)
-        // PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT — logged with
-        // the raw code because "could not get your location" alone gave no
-        // way to tell an indoor GPS timeout from a denied prompt.
-        console.error('[RequestDetailsStep] getCurrentPosition failed', { code: error.code, message: error.message })
-        setLocationNote(
-          error.code === error.PERMISSION_DENIED
-            ? t('request', 'locationErrorDenied')
-            : error.code === error.POSITION_UNAVAILABLE
-              ? t('request', 'locationErrorUnavailable')
-              : error.code === error.TIMEOUT
-                ? t('request', 'locationErrorTimeout')
-                : t('request', 'locationErrorGeneric')
-        )
-      },
-      // A tight, high-accuracy request is exactly what stalls indoors on
-      // Android — GPS can't get a fix and there's no fallback within the
-      // timeout. Network-based location resolves in seconds and is plenty
-      // precise for an address, and a cached fix from the last minute is
-      // fine too rather than forcing a fresh read every time.
-      { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 }
-    )
+  function handleLocationChange(newLat: number, newLng: number, address: string | null) {
+    onChange({
+      ...draft,
+      location: address ?? draft.location,
+      locationLat: newLat,
+      locationLng: newLng,
+    })
+    setLocationNote(address ? null : t('request', 'locationFoundNoAddress'))
   }
 
   return (
@@ -198,20 +162,16 @@ export default function RequestDetailsStep({
 
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-ink">{t('request', 'locationLabel')}</legend>
-          <button
-            type="button"
-            onClick={handleUseLocation}
-            disabled={locating}
-            className="mb-2 flex items-center gap-2 rounded-2xl border border-card-border bg-white px-4 py-3 text-sm font-bold text-orange disabled:opacity-60"
-          >
-            <PinIcon />
-            {locating ? t('request', 'locating') : t('request', 'useCurrentLocation')}
-          </button>
-          {locationNote && <p className="mb-2 text-xs font-semibold text-muted">{locationNote}</p>}
+          <LocationMapPicker
+            lat={draft.locationLat}
+            lng={draft.locationLng}
+            onLocationChange={handleLocationChange}
+          />
+          {locationNote && <p className="mt-2 text-xs font-semibold text-muted">{locationNote}</p>}
           <input
             value={draft.location}
             onChange={(e) => set('location', e.target.value)}
-            className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+            className="mt-3 w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
           />
           <p className="mt-2 text-xs text-muted">{t('request', 'locationHint')}</p>
         </fieldset>
