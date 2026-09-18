@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { LanguageProvider, useLanguage, useT } from '@/components/LanguageContext'
 import WorkRequestFlow from '@/components/WorkRequestFlow'
 import PhotoLightbox from '@/components/PhotoLightbox'
@@ -85,7 +86,10 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
     <div className="flex min-h-dvh flex-col bg-cream pb-28">
       <div className="mx-auto w-full max-w-2xl px-5 pt-6">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-extrabold text-ink">VOUCH</span>
+          <Link href="/" className="flex items-center gap-1.5 text-sm font-extrabold text-ink active:opacity-70">
+            <HomeIcon />
+            VOUCH
+          </Link>
           <div className="flex gap-2 text-xs font-bold">
             <button
               type="button"
@@ -315,6 +319,15 @@ function RecordRow({ label, value, first }: { label: string; value: string; firs
       <span className="text-sm text-muted">{label}</span>
       <span className="text-sm font-bold text-ink">{value}</span>
     </div>
+  )
+}
+
+function HomeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 11l9-7 9 7" />
+      <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
+    </svg>
   )
 }
 

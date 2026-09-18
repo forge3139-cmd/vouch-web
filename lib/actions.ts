@@ -1,6 +1,8 @@
 'use server'
 
 import { getSupabaseServerClient } from './supabase'
+import { getClientIp, recordAttempt } from './rateLimit'
+import { validateImageFile } from './fileValidation'
 import type { ConfirmationInsert, DisputeInsert } from './types'
 
 const paymentStatusToClientAnswer: Record<string, string> = {
@@ -8,6 +10,13 @@ const paymentStatusToClientAnswer: Record<string, string> = {
   unpaid: 'not_yet',
   partial: 'partly',
 }
+
+// Submit and decline share one bucket — both are "completing this token's
+// confirmation flow" from the confirmer's side, gated the same way. 20/hour
+// per IP comfortably covers a shared office or family network confirming
+// several different links while still capping scripted abuse.
+const CONFIRMATION_SUBMIT_LIMIT = 20
+const CONFIRMATION_SUBMIT_WINDOW_MS = 60 * 60 * 1000
 
 async function getValidOpenLink(token: string) {
   const supabase = getSupabaseServerClient()
@@ -55,6 +64,11 @@ export async function submitConfirmationAction(
   _prevState: SubmitConfirmationResult,
   formData: FormData
 ): Promise<SubmitConfirmationResult> {
+  const ip = await getClientIp()
+  if (recordAttempt(`confirmation-submit:${ip}`, CONFIRMATION_SUBMIT_LIMIT, CONFIRMATION_SUBMIT_WINDOW_MS)) {
+    return { ok: false, confirmedCount: 0, error: 'Too many attempts. Please try again later.' }
+  }
+
   const token = String(formData.get('token') ?? '')
 
   let supabase, link
@@ -144,21 +158,26 @@ export async function submitConfirmationAction(
   }
 
   if (photo instanceof File && photo.size > 0) {
-    const path = `${link.record_id}/confirmer-${Date.now()}-${photo.name}`
-    const { data: uploaded } = await supabase.storage
-      .from('proofs')
-      .upload(path, photo, { contentType: photo.type })
+    const validation = await validateImageFile(photo)
+    if (!validation.ok) {
+      console.error('[submitConfirmationAction] rejected photo', { name: photo.name, reason: validation.reason })
+    } else {
+      const path = `${link.record_id}/confirmer-${Date.now()}-${photo.name}`
+      const { data: uploaded } = await supabase.storage
+        .from('proofs')
+        .upload(path, photo, { contentType: validation.contentType })
 
-    if (uploaded) {
-      const { data: publicUrl } = supabase.storage.from('proofs').getPublicUrl(uploaded.path)
-      await (supabase.from('proofs') as any).insert({
-        record_id: link.record_id,
-        uploaded_by: null,
-        side: 'confirmer',
-        file_url: publicUrl.publicUrl,
-        media_type: photo.type,
-        caption: null,
-      })
+      if (uploaded) {
+        const { data: publicUrl } = supabase.storage.from('proofs').getPublicUrl(uploaded.path)
+        await (supabase.from('proofs') as any).insert({
+          record_id: link.record_id,
+          uploaded_by: null,
+          side: 'confirmer',
+          file_url: publicUrl.publicUrl,
+          media_type: validation.contentType,
+          caption: null,
+        })
+      }
     }
   }
 
@@ -190,6 +209,11 @@ export async function declineConfirmationAction(
   _prevState: DeclineResult,
   formData: FormData
 ): Promise<DeclineResult> {
+  const ip = await getClientIp()
+  if (recordAttempt(`confirmation-submit:${ip}`, CONFIRMATION_SUBMIT_LIMIT, CONFIRMATION_SUBMIT_WINDOW_MS)) {
+    return { ok: false, error: 'Too many attempts. Please try again later.' }
+  }
+
   const token = String(formData.get('token') ?? '')
   const reason = formData.get('reason')
 

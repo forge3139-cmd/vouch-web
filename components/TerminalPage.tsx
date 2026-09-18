@@ -4,7 +4,7 @@ export default function TerminalPage({
   section,
   vars,
 }: {
-  section: 'invalid' | 'expired' | 'alreadyDone'
+  section: 'invalid' | 'expired' | 'alreadyDone' | 'rateLimited'
   vars?: Record<string, string>
 }) {
   const en = dictionaries.en[section]

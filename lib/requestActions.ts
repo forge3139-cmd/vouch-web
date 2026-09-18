@@ -1,11 +1,19 @@
 'use server'
 
 import { getSupabaseServerClient } from './supabase'
+import { getClientIp, recordAttempt } from './rateLimit'
+import { MAX_PHOTOS_PER_SUBMISSION, validateImageFile } from './fileValidation'
 
 export interface SubmitWorkRequestResult {
   ok: boolean
   error?: string
 }
+
+// One IP sending work requests to worker after worker, over and over, is
+// spam rather than someone hiring for real jobs — five per hour is
+// generous for a genuine visitor and a real ceiling for a script.
+const REQUEST_SUBMIT_LIMIT = 5
+const REQUEST_SUBMIT_WINDOW_MS = 60 * 60 * 1000
 
 /**
  * No price field on purpose — the worker calls to agree a price by phone
@@ -18,6 +26,11 @@ export interface SubmitWorkRequestResult {
  * reliable transport for file uploads through Server Actions.
  */
 export async function submitWorkRequestAction(formData: FormData): Promise<SubmitWorkRequestResult> {
+  const ip = await getClientIp()
+  if (recordAttempt(`work-request-submit:${ip}`, REQUEST_SUBMIT_LIMIT, REQUEST_SUBMIT_WINDOW_MS)) {
+    return { ok: false, error: 'Too many requests. Please try again later.' }
+  }
+
   const slug = String(formData.get('slug') ?? '')
   const title = String(formData.get('title') ?? '')
   const description = String(formData.get('description') ?? '')
@@ -30,7 +43,10 @@ export async function submitWorkRequestAction(formData: FormData): Promise<Submi
   const neededBy = String(formData.get('neededBy') ?? '')
   const clientName = String(formData.get('clientName') ?? '')
   const clientPhone = String(formData.get('clientPhone') ?? '')
-  const photos = formData.getAll('photos').filter((p): p is File => p instanceof File)
+  const photos = formData
+    .getAll('photos')
+    .filter((p): p is File => p instanceof File)
+    .slice(0, MAX_PHOTOS_PER_SUBMISSION)
 
   const supabase = getSupabaseServerClient()
 
@@ -72,12 +88,19 @@ export async function submitWorkRequestAction(formData: FormData): Promise<Submi
   }
 
   for (const photo of photos) {
-    if (photo.size === 0) continue
+    const validation = await validateImageFile(photo)
+    if (!validation.ok) {
+      // Same "never undo the request over an optional photo" policy as a
+      // failed upload below — an invalid file is dropped, logged, and
+      // submission continues.
+      console.error('[submitWorkRequestAction] rejected photo', { name: photo.name, reason: validation.reason })
+      continue
+    }
 
     const path = `${request.id}/${Date.now()}-${photo.name}`
     const { data: uploaded, error: uploadError } = await supabase.storage
       .from('work-request-photos')
-      .upload(path, photo, { contentType: photo.type })
+      .upload(path, photo, { contentType: validation.contentType })
 
     if (uploadError || !uploaded) {
       // Photos are optional and never required — a failed upload here
@@ -92,7 +115,7 @@ export async function submitWorkRequestAction(formData: FormData): Promise<Submi
     const { error: photoInsertError } = await (supabase.from('work_request_photos') as any).insert({
       work_request_id: request.id,
       file_url: publicUrl.publicUrl,
-      media_type: photo.type,
+      media_type: validation.contentType,
     })
 
     if (photoInsertError) {

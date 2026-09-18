@@ -16,6 +16,10 @@ export default async function ConfirmationPage({
     return <TerminalPage section="invalid" />
   }
 
+  if (result.status === 'rate_limited') {
+    return <TerminalPage section="rateLimited" />
+  }
+
   if (result.status === 'expired') {
     return <TerminalPage section="expired" />
   }

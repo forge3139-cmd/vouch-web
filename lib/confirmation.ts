@@ -1,15 +1,32 @@
 import 'server-only'
 import { getSupabaseServerClient } from './supabase'
+import { getClientIp, isRateLimited, recordAttempt } from './rateLimit'
 import type { ConfirmationBundle, ConfirmationLinkRow, IdentityRow, RecordRow } from './types'
 
 export type LinkLookupResult =
   | { status: 'not_found' }
   | { status: 'expired'; link: ConfirmationLinkRow }
   | { status: 'already_completed'; link: ConfirmationLinkRow; completedAt: string }
+  | { status: 'rate_limited' }
   | { status: 'ok'; bundle: ConfirmationBundle }
+
+// A handful of wrong guesses from one IP within 15 minutes blocks that IP
+// from further lookups for the rest of the window — tokens are 64 hex
+// characters, so brute-forcing one by guessing was never remotely
+// feasible, but this stops scripted probing dead well before that matters.
+// Only failed (not_found) lookups count — a visitor re-opening their own
+// valid link never trips this.
+const LOOKUP_FAILURE_LIMIT = 8
+const LOOKUP_WINDOW_MS = 15 * 60 * 1000
 
 export async function loadConfirmation(token: string): Promise<LinkLookupResult> {
   const supabase = getSupabaseServerClient()
+  const ip = await getClientIp()
+  const rateLimitKey = `confirmation-lookup:${ip}`
+
+  if (isRateLimited(rateLimitKey, LOOKUP_FAILURE_LIMIT)) {
+    return { status: 'rate_limited' }
+  }
 
   const { data: link } = await supabase
     .from('confirmation_links')
@@ -17,7 +34,10 @@ export async function loadConfirmation(token: string): Promise<LinkLookupResult>
     .eq('token', token)
     .maybeSingle<ConfirmationLinkRow>()
 
-  if (!link) return { status: 'not_found' }
+  if (!link) {
+    recordAttempt(rateLimitKey, LOOKUP_FAILURE_LIMIT, LOOKUP_WINDOW_MS)
+    return { status: 'not_found' }
+  }
 
   if (link.completed_at) {
     return { status: 'already_completed', link, completedAt: link.completed_at }

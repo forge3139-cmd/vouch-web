@@ -74,6 +74,10 @@ export const dictionaries = {
       title: 'Already confirmed',
       body: 'You confirmed this on {date}.',
     },
+    rateLimited: {
+      title: 'Too many attempts',
+      body: 'Please wait a while before trying again.',
+    },
     error: {
       generic: 'Something went wrong. Please try again.',
     },
@@ -257,6 +261,10 @@ export const dictionaries = {
     alreadyDone: {
       title: 'Tayari umethibitisha',
       body: 'Ulithibitisha hili tarehe {date}.',
+    },
+    rateLimited: {
+      title: 'Majaribio mengi sana',
+      body: 'Tafadhali subiri kidogo kabla ya kujaribu tena.',
     },
     error: {
       generic: 'Hitilafu imetokea. Tafadhali jaribu tena.',
