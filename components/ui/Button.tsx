@@ -1,12 +1,16 @@
 import type { ButtonHTMLAttributes } from 'react'
 
-type Variant = 'primary' | 'dark' | 'outline' | 'light'
+type Variant = 'primary' | 'dark' | 'outline' | 'light' | 'blue' | 'orange'
 
+// primary/dark are the app's dark pill CTA; orange is the hero-gradient
+// button; blue is for secondary actions; outline/light are frosted glass.
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-orange text-white',
-  dark: 'bg-ink text-white',
-  outline: 'bg-white text-ink border border-card-border',
-  light: 'bg-card-border text-ink',
+  primary: 'btn-dark',
+  dark: 'btn-dark',
+  outline: 'btn-glass',
+  light: 'btn-glass',
+  blue: 'btn-blue',
+  orange: 'btn-orange',
 }
 
 export default function Button({
@@ -17,7 +21,7 @@ export default function Button({
   return (
     <button
       {...props}
-      className={`w-full rounded-2xl py-4 text-base font-bold transition-opacity disabled:opacity-40 active:opacity-80 ${variantClasses[variant]} ${className}`}
+      className={`btn tap w-full py-4 text-base disabled:opacity-40 active:opacity-80 ${variantClasses[variant]} ${className}`}
     />
   )
 }

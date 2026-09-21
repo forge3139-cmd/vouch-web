@@ -16,11 +16,7 @@ export default function RadioPills<T extends string>({
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`rounded-2xl border px-5 py-3 text-sm font-bold transition-colors ${
-              active
-                ? 'border-orange bg-orange text-white'
-                : 'border-card-border bg-white text-ink'
-            }`}
+            className={`pill tap px-5 py-3 text-sm font-bold transition-colors ${active ? 'pill-active' : ''}`}
           >
             {option.label}
           </button>

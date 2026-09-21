@@ -14,7 +14,7 @@ export default function TerminalPage({
     vars ? Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, v), raw) : raw
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[560px] flex-col items-center justify-center px-6 text-center">
       <h1 className="text-xl font-extrabold text-ink">VOUCH</h1>
       <div className="mt-8 max-w-sm">
         <p className="text-lg font-bold text-ink">{fill(en.title)}</p>

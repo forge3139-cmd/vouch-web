@@ -14,7 +14,7 @@ const DAR_ES_SALAAM: [number, number] = [-6.7924, 39.2083]
 const pinIcon = L.divIcon({
   className: '',
   html: `<svg width="30" height="40" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="#E86C2A"/>
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="#FF8F00"/>
     <circle cx="12" cy="12" r="5" fill="white"/>
   </svg>`,
   iconSize: [30, 40],
@@ -101,7 +101,7 @@ export default function LocationMapPicker({
   }, [])
 
   return (
-    <div className="h-full w-full overflow-hidden rounded-2xl border border-card-border">
+    <div className="h-full w-full overflow-hidden rounded-card border border-card-border">
       <div ref={containerRef} className="h-full w-full bg-card-border" />
     </div>
   )

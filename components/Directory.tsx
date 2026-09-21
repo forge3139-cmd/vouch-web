@@ -7,6 +7,7 @@ import type { DirectoryEntry, DirectoryParams, SortOption } from '@/lib/director
 import { CATEGORY_LABELS, CATEGORY_VALUES, type Category } from '@/lib/categories'
 import CategoryIcon from '@/components/icons/CategoryIcon'
 import DirectoryCard from '@/components/DirectoryCard'
+import Badge from '@/components/ui/Badge'
 
 const SORTS: SortOption[] = ['recently_active', 'repeat_clients', 'jobs_confirmed']
 const sortLabelKey: Record<SortOption, 'sortJobsConfirmed' | 'sortRepeatClients' | 'sortRecentlyActive'> = {
@@ -100,28 +101,30 @@ function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }
 
   const categoryLabel = category ? CATEGORY_LABELS[category][lang] : null
 
+  const tints = ['orange', 'blue', 'green'] as const
+
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-card-border bg-white">
-        <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange text-sm font-extrabold text-white">
+      <header className="glass-bar sticky top-0 z-20 border-b">
+        <div className="page-container flex items-center justify-between py-3 sm:py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[image:var(--gradient-hero)] text-sm font-extrabold text-white shadow-[0_8px_18px_-6px_rgba(232,108,42,0.6)]">
               V
             </div>
             <span className="text-lg font-extrabold text-ink">VOUCH</span>
           </div>
-          <div className="flex overflow-hidden rounded-full border border-card-border text-xs font-bold">
+          <div className="pill overflow-hidden p-0.5 text-xs font-bold">
             <button
               type="button"
               onClick={() => setLang('en')}
-              className={`px-3 py-1.5 ${lang === 'en' ? 'bg-orange text-white' : 'text-muted'}`}
+              className={`tap rounded-pill px-3.5 py-1.5 ${lang === 'en' ? 'bg-ink text-white' : 'text-muted'}`}
             >
               EN
             </button>
             <button
               type="button"
               onClick={() => setLang('sw')}
-              className={`px-3 py-1.5 ${lang === 'sw' ? 'bg-orange text-white' : 'text-muted'}`}
+              className={`tap rounded-pill px-3.5 py-1.5 ${lang === 'sw' ? 'bg-ink text-white' : 'text-muted'}`}
             >
               SW
             </button>
@@ -129,57 +132,64 @@ function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }
         </div>
       </header>
 
-      <section className="bg-gradient-to-b from-orange/[0.06] to-cream">
-        <div className="mx-auto w-full max-w-2xl px-5 pt-10 pb-8">
-          <span className="inline-block rounded-full bg-orange/10 px-3 py-1 text-[11px] font-extrabold tracking-wide text-orange">
-            {t('directory', 'heroPill')}
-          </span>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight text-ink">{t('directory', 'heroTitle')}</h1>
-          <p className="mt-2 text-sm text-muted">{t('directory', 'heroSubtitle')}</p>
+      <div className="page-container pt-5 sm:pt-8">
+        <section className="hero-card px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+          <div className="max-w-2xl">
+            <Badge variant="onHero" size="sm">
+              {t('directory', 'heroPill')}
+            </Badge>
+            <h1 className="mt-4 text-3xl leading-tight font-extrabold text-white sm:text-4xl lg:text-5xl">
+              {t('directory', 'heroTitle')}
+            </h1>
+            <p className="mt-3 text-sm text-white/85 sm:text-base">{t('directory', 'heroSubtitle')}</p>
 
-          <form onSubmit={handleSearchSubmit} className="mt-6 flex items-center gap-2 rounded-2xl border border-card-border bg-white p-2">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('directory', 'searchPlaceholder')}
-              className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-ink outline-none"
-            />
-            <button type="submit" className="shrink-0 rounded-xl bg-orange px-5 py-3 text-sm font-bold text-white active:opacity-80">
-              {t('directory', 'search')}
-            </button>
-          </form>
+            <form
+              onSubmit={handleSearchSubmit}
+              className="mt-6 flex items-center gap-2 rounded-pill bg-white/90 p-1.5 shadow-[0_14px_34px_-14px_rgba(26,26,26,0.45)] sm:mt-8"
+            >
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('directory', 'searchPlaceholder')}
+                className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-sm text-ink outline-none placeholder:text-muted sm:text-base"
+              />
+              <button type="submit" className="btn btn-dark tap shrink-0 px-5 py-3 text-sm sm:px-7">
+                {t('directory', 'search')}
+              </button>
+            </form>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            {quickChipKeys.map((key) => {
-              const label = t('directory', key)
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handleQuickChip(label)}
-                  className="rounded-full border border-card-border bg-white px-3 py-1.5 text-xs font-semibold text-ink active:opacity-70"
-                >
-                  {label}
-                </button>
-              )
-            })}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {quickChipKeys.map((key) => {
+                const label = t('directory', key)
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => handleQuickChip(label)}
+                    className="pill pill-on-hero tap px-3.5 py-1.5 text-xs font-semibold active:opacity-70"
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      <div className="mx-auto w-full max-w-2xl flex-1 px-5 py-8">
-        <h2 className="mb-3 text-base font-extrabold text-ink">{t('directory', 'browseByTrade')}</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {CATEGORY_VALUES.map((cat) => (
+      <div className="page-container flex-1 py-8 sm:py-10">
+        <h2 className="mb-4 text-lg font-extrabold text-ink sm:text-xl">{t('directory', 'browseByTrade')}</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          {CATEGORY_VALUES.map((cat, i) => (
             <button
               key={cat}
               type="button"
               onClick={() => handleCategoryClick(cat)}
-              className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${
-                category === cat ? 'border-orange bg-orange/5' : 'border-card-border bg-white'
+              className={`glass-solid lift tap flex items-center gap-3 p-3 text-left transition-colors sm:p-4 ${
+                category === cat ? 'ring-2 ring-orange' : ''
               }`}
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange/10 text-orange">
+              <span className={`icon-circle icon-circle-${tints[i % 3]} h-10 w-10`}>
                 <CategoryIcon category={cat} className="h-5 w-5" />
               </span>
               <span className="text-sm font-bold text-ink">{CATEGORY_LABELS[cat][lang]}</span>
@@ -187,17 +197,21 @@ function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }
           ))}
         </div>
 
-        <div className="mt-8">
+        <div className="mt-10">
           {hasFilters ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
                 {query.trim() && (
-                  <FilterChip label={query.trim()} onRemove={clearQuery} removeLabel={t('directory', 'removeFilter')} />
+                  <Badge variant="outline" onRemove={clearQuery} removeLabel={t('directory', 'removeFilter')}>
+                    {query.trim()}
+                  </Badge>
                 )}
                 {categoryLabel && (
-                  <FilterChip label={categoryLabel} onRemove={clearCategory} removeLabel={t('directory', 'removeFilter')} />
+                  <Badge variant="outline" onRemove={clearCategory} removeLabel={t('directory', 'removeFilter')}>
+                    {categoryLabel}
+                  </Badge>
                 )}
-                <button type="button" onClick={clearAll} className="text-xs font-bold text-orange">
+                <button type="button" onClick={clearAll} className="link-hover tap text-xs font-bold text-blue">
                   {t('directory', 'clearFilters')}
                 </button>
               </div>
@@ -206,18 +220,18 @@ function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }
               </p>
             </>
           ) : (
-            <h2 className="text-base font-extrabold text-ink">{t('directory', 'recentlyActive')}</h2>
+            <h2 className="text-lg font-extrabold text-ink sm:text-xl">{t('directory', 'recentlyActive')}</h2>
           )}
 
-          <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+          <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-2">
             <span className="shrink-0 text-xs font-bold text-muted">{t('directory', 'sortLabel')}</span>
             {SORTS.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => handleSortClick(s)}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
-                  sort === s ? 'bg-ink text-white' : 'border border-card-border bg-white text-muted'
+                className={`pill tap shrink-0 px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                  sort === s ? 'pill-active' : 'text-neutral'
                 }`}
               >
                 {t('directory', sortLabelKey[s])}
@@ -225,27 +239,20 @@ function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }
             ))}
           </div>
 
-          <div className={`mt-4 space-y-3 transition-opacity ${isPending ? 'opacity-50' : ''}`}>
+          <div
+            className={`mt-5 grid gap-3 transition-opacity sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 ${isPending ? 'opacity-50' : ''}`}
+          >
             {entries.length === 0 ? (
-              <EmptyState query={query} categoryLabel={categoryLabel} onClear={clearAll} />
+              <div className="sm:col-span-2 lg:col-span-3">
+                <EmptyState query={query} categoryLabel={categoryLabel} onClear={clearAll} />
+              </div>
             ) : (
-              entries.map((entry) => <DirectoryCard key={entry.worker.id} entry={entry} />)
+              entries.map((entry, i) => <DirectoryCard key={entry.worker.id} entry={entry} index={i} />)
             )}
           </div>
         </div>
       </div>
     </div>
-  )
-}
-
-function FilterChip({ label, onRemove, removeLabel }: { label: string; onRemove: () => void; removeLabel: string }) {
-  return (
-    <span className="flex items-center gap-1.5 rounded-full border border-card-border bg-white py-1.5 pl-3 pr-2 text-xs font-semibold text-ink">
-      {label}
-      <button type="button" onClick={onRemove} aria-label={removeLabel} className="text-muted">
-        ×
-      </button>
-    </span>
   )
 }
 
@@ -269,12 +276,12 @@ function EmptyState({
       : t('directory', 'emptyNone')
 
   return (
-    <div className="flex flex-col items-center gap-2 rounded-2xl border border-card-border bg-white px-6 py-10 text-center">
+    <div className="glass flex flex-col items-center gap-2 px-6 py-10 text-center">
       <p className="text-sm font-semibold text-ink">{message}</p>
       {hasFilters && (
         <>
           <p className="text-xs text-muted">{t('directory', 'emptyHint')}</p>
-          <button type="button" onClick={onClear} className="mt-1 text-xs font-bold text-orange">
+          <button type="button" onClick={onClear} className="link-hover tap mt-1 text-xs font-bold text-blue">
             {t('directory', 'clearFilters')}
           </button>
         </>

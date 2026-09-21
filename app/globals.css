@@ -1,32 +1,392 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+ * VOUCH web design tokens — the single source of truth. Mirrors the
+ * mobile app's glass look: warm cream page with soft orange/blue glows
+ * behind frosted-white cards, hero gradients, tinted icon circles, pill
+ * filters. Change a value here and every page follows.
+ * ------------------------------------------------------------------ */
 :root {
-  --color-cream: #faf7f2;
-  --color-card-border: #f0ebe3;
-  --color-orange: #e86c2a;
-  --color-ink: #1a1a1a;
-  --color-muted: #8a8799;
-  --color-faint: #c4c0bc;
-  --color-green: #2ecc71;
-  --color-green-tint: #e8f8f0;
-  --color-blue: #3b82f6;
-  --color-blue-tint: #eaf2ff;
+  /* Palette */
+  --color-cream: #f5f3f0; /* page background */
+  --color-orange: #ff8f00; /* orange — FF8F00 from the palette */
+  --color-orange-light: #fff1de;
+  --color-orange-soft: #ffb347; /* hero gradient end */
+  --color-blue: #47a5ff; /* accent: info, links, secondary actions */
+  --color-blue-light: #e8f3ff;
+  --color-neutral: #4c5055; /* icons, quiet UI */
+  --color-ink: #000000; /* black — primary text */
+  --color-muted: #4c5055; /* grey — secondary text */
+  --color-faint: #9d9fa1;
+  --color-green: #2ecc71; /* success */
+  --color-green-tint: rgba(46, 204, 113, 0.16);
+  --color-card-border: #ecedee; /* solid dividers / empty fills */
+
+  /* Tinted icon circles — visibly coloured, never grey */
+  --tint-orange: rgba(255, 143, 0, 0.16);
+  --tint-blue: rgba(71, 165, 255, 0.2);
+  --tint-green: rgba(46, 204, 113, 0.2);
+
+  /* Glass — white at ~80–85%, real blur, bright 1px hairline, wide soft shadow */
+  --glass-fill: rgba(255, 255, 255, 0.82);
+  --glass-fill-raised: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-blur: 12px;
+  --glass-shadow: 0 20px 50px -14px rgba(76, 80, 85, 0.24), 0 4px 16px rgba(76, 80, 85, 0.06);
+  --glass-shadow-soft: 0 12px 32px -12px rgba(76, 80, 85, 0.18), 0 2px 8px rgba(76, 80, 85, 0.04);
+  --glass-shadow-hover: 0 26px 60px -14px rgba(76, 80, 85, 0.3), 0 6px 18px rgba(76, 80, 85, 0.08);
+  --hairline-dark: rgba(76, 80, 85, 0.14);
+
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg, #ff8f00 0%, #ffb347 100%);
+  --gradient-card: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 249, 243, 0.84) 100%);
+  --gradient-dark: linear-gradient(160deg, #4c5055 0%, #000000 100%);
+
+  /* Shape */
+  --radius-card: 1.25rem; /* cards, inputs, sheets */
+  --radius-hero: 1.75rem;
+  --radius-pill: 9999px;
+  --shadow-float: 0 -8px 32px rgba(76, 80, 85, 0.18);
+
+  /* Layout */
+  --spacing-page: 1.25rem; /* phone gutter */
+  --spacing-card: 1rem;
+  --container-max: 1200px;
+  --form-max: 560px;
+}
+
+/* Tablet: wider padding. Desktop: wider gutter and a stronger blur (cheap
+ * phones keep the small radius). */
+@media (min-width: 640px) {
+  :root {
+    --spacing-page: 2rem;
+    --spacing-card: 1.25rem;
+    --glass-blur: 16px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --spacing-page: 2.5rem;
+    --spacing-card: 1.5rem;
+    --glass-blur: 22px;
+  }
 }
 
 @theme inline {
   --font-sans: var(--font-inter);
   --color-cream: var(--color-cream);
-  --color-card-border: var(--color-card-border);
   --color-orange: var(--color-orange);
+  --color-orange-light: var(--color-orange-light);
+  --color-orange-soft: var(--color-orange-soft);
+  --color-blue: var(--color-blue);
+  --color-blue-light: var(--color-blue-light);
+  --color-neutral: var(--color-neutral);
   --color-ink: var(--color-ink);
   --color-muted: var(--color-muted);
   --color-faint: var(--color-faint);
   --color-green: var(--color-green);
   --color-green-tint: var(--color-green-tint);
-  --color-blue: var(--color-blue);
-  --color-blue-tint: var(--color-blue-tint);
+  --color-card-border: var(--color-card-border);
+
+  --radius-card: var(--radius-card);
+  --radius-hero: var(--radius-hero);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-float: var(--shadow-float);
+
+  --spacing-page: var(--spacing-page);
+  --spacing-card: var(--spacing-card);
 }
 
 body {
   font-family: var(--font-sans), system-ui, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+/* Soft orange and blue glows behind every page. Radial gradients are
+ * already feathered to nothing, so they need no filter (cheap on phones),
+ * and they give the frosted cards real colour to blur. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 46% at 6% 2%, rgba(255, 143, 0, 0.34), transparent 70%),
+    radial-gradient(50% 42% at 100% 20%, rgba(71, 165, 255, 0.3), transparent 70%),
+    radial-gradient(46% 40% at 0% 60%, rgba(255, 143, 0, 0.22), transparent 70%),
+    radial-gradient(56% 46% at 94% 94%, rgba(71, 165, 255, 0.28), transparent 70%);
+}
+
+@layer components {
+/* ---- Layout ---- */
+.page-container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--spacing-page);
+}
+
+/* Request and confirmation forms stay narrow and centred at every size. */
+.form-shell {
+  display: flex;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: var(--form-max);
+  margin-inline: auto;
+  flex-direction: column;
+  padding: 2.5rem 1.5rem;
+}
+@media (min-width: 640px) {
+  .form-shell {
+    padding-block: 3.5rem;
+  }
+}
+
+/* ---- Glass materials ---- */
+
+/* Real frosted glass — for hero-adjacent panels, profile sections, sheets.
+ * Use sparingly; never on every row of a long list. */
+.glass {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-card);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+}
+
+/* Sticky bars (top header, bottom request bar): blurred, hairline edge. */
+.glass-bar {
+  background: var(--glass-fill-raised);
+  border-color: var(--glass-border);
+  box-shadow: 0 8px 28px -16px rgba(76, 80, 85, 0.3);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+}
+
+/* List cards: same look, but a soft gradient wash instead of blur, so long
+ * lists stay cheap to paint and readable. */
+.glass-solid {
+  background: var(--gradient-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-soft);
+  border-radius: var(--radius-card);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-bar {
+    background: rgba(255, 255, 255, 0.95);
+  }
+}
+
+/* Hero gradient card — the focal point of a page. */
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-hero);
+  background: var(--gradient-hero);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 24px 56px -18px rgba(255, 143, 0, 0.55), 0 4px 16px rgba(255, 143, 0, 0.12);
+}
+.hero-card::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.4), transparent);
+  pointer-events: none;
+}
+.hero-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Stat tile + tinted icon circle. */
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  background: var(--gradient-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-soft);
+}
+.icon-circle {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+}
+.icon-circle-orange {
+  background: var(--tint-orange);
+  color: var(--color-orange);
+}
+.icon-circle-blue {
+  background: var(--tint-blue);
+  color: var(--color-blue);
+}
+.icon-circle-green {
+  background: var(--tint-green);
+  color: var(--color-green);
+}
+
+/* Coloured accent bar down the left of a list card. */
+.accent-bar {
+  border-left: 4px solid var(--accent, var(--color-orange));
+}
+.accent-orange {
+  --accent: var(--color-orange);
+}
+.accent-blue {
+  --accent: var(--color-blue);
+}
+.accent-green {
+  --accent: var(--color-green);
+}
+
+/* Pill filters */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill-raised);
+  color: var(--color-ink);
+  box-shadow: 0 2px 8px rgba(76, 80, 85, 0.06);
+}
+.pill-active {
+  background: var(--gradient-dark);
+  border-color: transparent;
+  color: #fff;
+}
+.pill-on-hero {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  transition: filter 150ms ease, opacity 150ms ease;
+}
+.btn-dark {
+  background: var(--gradient-dark);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.5);
+}
+.btn-glass {
+  background: var(--glass-fill);
+  color: var(--color-ink);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-soft);
+}
+.btn-blue {
+  background: var(--color-blue);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 10px 24px -8px rgba(71, 165, 255, 0.6);
+}
+.btn-orange {
+  background: var(--gradient-hero);
+  color: #fff;
+  box-shadow: 0 10px 24px -8px rgba(255, 143, 0, 0.6);
+}
+
+/* Inputs */
+.field {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--hairline-dark);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.field:focus {
+  border-color: var(--color-orange);
+  box-shadow: 0 0 0 3px var(--tint-orange);
+}
+
+/* Large touch targets on phone and tablet. */
+@media (pointer: coarse) {
+  .tap {
+    min-height: 44px;
+  }
+}
+
+/* Hover only where a real pointer exists. */
+@media (hover: hover) and (pointer: fine) {
+  .lift {
+    transition: translate 180ms ease, box-shadow 180ms ease;
+  }
+  .lift:hover {
+    translate: 0 -3px;
+    box-shadow: var(--glass-shadow-hover);
+  }
+  .btn:hover {
+    filter: brightness(1.1);
+  }
+  .btn-glass:hover,
+  .pill:hover {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .pill-active:hover,
+  .pill-on-hero:hover {
+    filter: brightness(1.12);
+  }
+  .link-hover:hover {
+    text-decoration: underline;
+  }
+}
+}
+
+/* Motion: only when the visitor hasn't asked to reduce it. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  .reveal-on-scroll.is-revealed {
+    animation: reveal-fade-up 300ms ease-out forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes reveal-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

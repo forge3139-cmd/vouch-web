@@ -14,7 +14,7 @@ export default function LanguageStep({ onChosen }: { onChosen: (lang: Lang) => v
   }
 
   return (
-    <div className="flex min-h-dvh flex-col justify-center px-6 py-16">
+    <div className="form-shell justify-center">
       <h1 className="mb-16 text-3xl font-extrabold tracking-tight text-ink">VOUCH</h1>
 
       <div className="flex flex-col gap-3">

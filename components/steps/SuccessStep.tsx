@@ -15,7 +15,7 @@ export default function SuccessStep({
   const initial = worker.display_name.charAt(0).toUpperCase()
 
   return (
-    <div className="flex min-h-dvh flex-col px-6 py-10">
+    <div className="form-shell">
       <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-tint">
         <span className="text-2xl font-bold text-green">✓</span>
       </div>
@@ -25,7 +25,7 @@ export default function SuccessStep({
         {t('success', 'subtitle', { name: worker.display_name })}
       </p>
 
-      <div className="mt-8 overflow-hidden rounded-2xl bg-card-border">
+      <div className="mt-8 glass overflow-hidden">
         <div className="px-4 pt-4 pb-3">
           <p className="text-[11px] font-bold tracking-wide text-muted">
             {t('success', 'trustedNetwork')}
@@ -36,8 +36,8 @@ export default function SuccessStep({
               : t('success', 'relationships', { count: confirmedCount })}
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-white px-4 py-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card-border text-sm font-bold text-ink">
+        <div className="flex items-center gap-3 border-t border-card-border bg-white/60 px-4 py-4">
+          <div className="icon-circle icon-circle-orange h-10 w-10 text-sm font-bold">
             {initial}
           </div>
           <div className="flex-1">
@@ -53,13 +53,13 @@ export default function SuccessStep({
       <div className="mt-auto flex flex-col gap-3 pt-10">
         <Link
           href="/discover"
-          className="w-full rounded-2xl bg-ink py-4 text-center text-sm font-bold text-white"
+          className="btn btn-dark tap w-full py-4 text-sm"
         >
           {t('success', 'findPeople')}
         </Link>
         <Link
           href="/join"
-          className="w-full rounded-2xl border border-card-border bg-white py-4 text-center text-sm font-bold text-ink"
+          className="btn btn-glass tap w-full py-4 text-sm"
         >
           {t('success', 'createProfile')}
         </Link>

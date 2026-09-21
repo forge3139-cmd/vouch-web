@@ -75,7 +75,7 @@ export default function QuestionsStep({
     (subStep === 6 && wouldWorkAgain !== null)
 
   return (
-    <form action={formAction} className="flex min-h-dvh flex-col px-6 py-10">
+    <form action={formAction} className="form-shell">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="originalWhat" value={originalWhat} />
       <input type="hidden" name="workHappened" value={workHappened ?? ''} />
@@ -88,7 +88,7 @@ export default function QuestionsStep({
 
       <div className="mb-6 h-1 w-full overflow-hidden rounded-full bg-card-border">
         <div
-          className="h-full rounded-full bg-orange transition-all"
+          className="h-full rounded-full bg-[image:var(--gradient-hero)] transition-all"
           style={{ width: `${((subStep + 1) / STEP_NAMES.length) * 100}%` }}
         />
       </div>
@@ -121,7 +121,7 @@ export default function QuestionsStep({
               value={what}
               onChange={(e) => setWhat(e.target.value)}
               rows={4}
-              className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+              className="field w-full p-4 text-base text-ink"
             />
           </fieldset>
         )}
@@ -135,7 +135,7 @@ export default function QuestionsStep({
               type="month"
               value={whenMonth}
               onChange={(e) => setWhenMonth(e.target.value)}
-              className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+              className="field w-full p-4 text-base text-ink"
             />
           </fieldset>
         )}
@@ -215,7 +215,7 @@ export default function QuestionsStep({
               capture="environment"
               disabled={photoCompressing}
               onChange={handlePhotoChange}
-              className="w-full rounded-2xl border border-dashed border-card-border bg-white p-4 text-sm text-ink disabled:opacity-60"
+              className="field w-full border-dashed p-4 text-sm text-ink disabled:opacity-60"
             />
             {photoCompressing && <p className="mt-2 text-xs text-muted">Compressing…</p>}
           </fieldset>
@@ -226,7 +226,7 @@ export default function QuestionsStep({
         <button
           type="button"
           onClick={back}
-          className="rounded-2xl border border-card-border bg-white px-6 py-4 text-sm font-bold text-ink"
+          className="btn btn-glass tap px-6 py-4 text-sm"
         >
           {t('questions', 'back')}
         </button>

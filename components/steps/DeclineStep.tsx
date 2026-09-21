@@ -28,7 +28,7 @@ export default function DeclineStep({
   }, [state, onDeclined])
 
   return (
-    <form action={formAction} className="flex min-h-dvh flex-col px-6 py-10">
+    <form action={formAction} className="form-shell">
       <input type="hidden" name="token" value={token} />
 
       <h1 className="text-2xl font-extrabold text-ink">{t('decline', 'title')}</h1>
@@ -43,7 +43,7 @@ export default function DeclineStep({
         <textarea
           name="reason"
           rows={4}
-          className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+          className="field w-full p-4 text-base text-ink"
         />
       </div>
 
@@ -51,7 +51,7 @@ export default function DeclineStep({
         <button
           type="button"
           onClick={onBack}
-          className="rounded-2xl border border-card-border bg-white px-6 py-4 text-sm font-bold text-ink"
+          className="btn btn-glass tap px-6 py-4 text-sm"
         >
           {t('questions', 'back')}
         </button>

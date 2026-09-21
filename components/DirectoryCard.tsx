@@ -3,12 +3,14 @@
 import Link from 'next/link'
 import { useCallback, useSyncExternalStore } from 'react'
 import { useT } from '@/components/LanguageContext'
+import { useScrollReveal } from '@/hooks/useScrollReveal'
 import type { DirectoryEntry } from '@/lib/directory'
 import { isWorkerSaved, subscribeSavedWorkers, toggleWorkerSaved } from '@/lib/savedWorkers'
 
-export default function DirectoryCard({ entry }: { entry: DirectoryEntry }) {
+export default function DirectoryCard({ entry, index = 0 }: { entry: DirectoryEntry; index?: number }) {
   const { worker, evidence } = entry
   const t = useT()
+  const ref = useScrollReveal<HTMLDivElement>(index)
   const saved = useSyncExternalStore(
     subscribeSavedWorkers,
     useCallback(() => isWorkerSaved(worker.id), [worker.id]),
@@ -16,14 +18,16 @@ export default function DirectoryCard({ entry }: { entry: DirectoryEntry }) {
   )
 
   const initial = worker.display_name.charAt(0).toUpperCase()
+  const accents = ['orange', 'blue', 'green'] as const
+  const accent = accents[[...worker.id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 3]
   const subtitle = [worker.headline, worker.location].filter(Boolean).join(' · ')
   const recordsConfirmed = evidence?.records_confirmed ?? 0
   const repeatClients = evidence?.repeat_clients ?? 0
 
   return (
-    <div className="rounded-2xl border border-card-border bg-white p-4">
+    <div ref={ref} className={`reveal-on-scroll glass-solid lift accent-bar accent-${accent} flex h-full flex-col p-card`}>
       <div className="flex items-start gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-card-border text-lg font-bold text-ink">
+        <div className={`icon-circle icon-circle-${accent} h-12 w-12 text-lg font-bold`}>
           {initial}
         </div>
         <div className="min-w-0 flex-1">
@@ -34,7 +38,7 @@ export default function DirectoryCard({ entry }: { entry: DirectoryEntry }) {
               onClick={() => toggleWorkerSaved(worker.id)}
               aria-label={saved ? t('directory', 'saved') : t('directory', 'save')}
               aria-pressed={saved}
-              className="shrink-0 text-muted"
+              className="tap -m-2 shrink-0 p-2 text-muted"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -72,11 +76,8 @@ export default function DirectoryCard({ entry }: { entry: DirectoryEntry }) {
         </div>
       </div>
 
-      <div className="mt-3 flex justify-end">
-        <Link
-          href={`/w/${worker.slug}`}
-          className="rounded-full border border-card-border bg-cream px-4 py-1.5 text-xs font-bold text-ink active:opacity-70"
-        >
+      <div className="mt-auto flex justify-end pt-3">
+        <Link href={`/w/${worker.slug}`} className="btn btn-dark tap px-5 py-2 text-xs active:opacity-70">
           {t('directory', 'view')}
         </Link>
       </div>

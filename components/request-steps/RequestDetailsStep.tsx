@@ -130,14 +130,14 @@ export default function RequestDetailsStep({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col px-6 py-10">
+    <div className="form-shell">
       <div className="flex-1 space-y-6">
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-ink">{t('request', 'titleLabel')}</legend>
           <input
             value={draft.title}
             onChange={(e) => set('title', e.target.value)}
-            className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+            className="field w-full p-4 text-base text-ink"
           />
         </fieldset>
 
@@ -148,7 +148,7 @@ export default function RequestDetailsStep({
             value={draft.description}
             onChange={(e) => set('description', e.target.value)}
             rows={4}
-            className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+            className="field w-full p-4 text-base text-ink"
           />
         </fieldset>
 
@@ -161,7 +161,7 @@ export default function RequestDetailsStep({
             value={draft.specifications}
             onChange={(e) => set('specifications', e.target.value)}
             rows={3}
-            className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+            className="field w-full p-4 text-base text-ink"
           />
         </fieldset>
 
@@ -178,7 +178,7 @@ export default function RequestDetailsStep({
             multiple
             disabled={compressing}
             onChange={handlePhotos}
-            className="w-full rounded-2xl border border-dashed border-card-border bg-white p-4 text-sm text-ink disabled:opacity-60"
+            className="field w-full border-dashed p-4 text-sm text-ink disabled:opacity-60"
           />
           {compressing && <p className="mt-2 text-xs text-muted">Compressing…</p>}
           {draft.photos.length > 0 && (
@@ -212,7 +212,7 @@ export default function RequestDetailsStep({
             type="button"
             onClick={handleUseCurrentLocation}
             disabled={locating}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-orange py-4 text-sm font-bold text-white disabled:opacity-60"
+            className="btn btn-blue tap w-full py-4 text-sm disabled:opacity-60"
           >
             <PinIcon />
             {locating ? t('request', 'locating') : t('request', 'useCurrentLocation')}
@@ -220,7 +220,7 @@ export default function RequestDetailsStep({
           <button
             type="button"
             onClick={() => setMapSheetOpen(true)}
-            className="mt-2 w-full text-center text-xs font-semibold text-muted underline underline-offset-2"
+            className="tap mt-2 w-full text-center text-xs font-semibold text-muted underline underline-offset-2"
           >
             {t('request', 'pickOnMap')}
           </button>
@@ -228,7 +228,7 @@ export default function RequestDetailsStep({
           <input
             value={draft.location}
             onChange={(e) => set('location', e.target.value)}
-            className="mt-3 w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+            className="mt-3 field w-full p-4 text-base text-ink"
           />
           <p className="mt-2 text-xs text-muted">{t('request', 'locationHint')}</p>
         </fieldset>
@@ -242,7 +242,7 @@ export default function RequestDetailsStep({
             type="date"
             value={draft.neededBy}
             onChange={(e) => set('neededBy', e.target.value)}
-            className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+            className="field w-full p-4 text-base text-ink"
           />
         </fieldset>
       </div>

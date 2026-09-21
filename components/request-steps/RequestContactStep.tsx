@@ -57,14 +57,14 @@ export default function RequestContactStep({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col px-6 py-10">
+    <div className="form-shell">
       <div className="flex-1 space-y-6">
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-ink">{t('request', 'nameLabel')}</legend>
           <input
             value={clientName}
             onChange={(e) => setClientName(e.target.value)}
-            className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+            className="field w-full p-4 text-base text-ink"
           />
         </fieldset>
 
@@ -74,12 +74,12 @@ export default function RequestContactStep({
             type="tel"
             value={clientPhone}
             onChange={(e) => setClientPhone(e.target.value)}
-            className="w-full rounded-2xl border border-card-border bg-white p-4 text-base text-ink"
+            className="field w-full p-4 text-base text-ink"
           />
           <p className="mt-2 text-xs text-muted">{t('request', 'phoneHint')}</p>
         </fieldset>
 
-        <p className="rounded-2xl bg-card-border p-4 text-sm text-ink">{t('request', 'callNote')}</p>
+        <p className="rounded-card bg-blue-light p-4 text-sm text-ink">{t('request', 'callNote')}</p>
 
         {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
       </div>
@@ -88,7 +88,7 @@ export default function RequestContactStep({
         <button
           type="button"
           onClick={onBack}
-          className="rounded-2xl border border-card-border bg-white px-6 py-4 text-sm font-bold text-ink"
+          className="btn btn-glass tap px-6 py-4 text-sm"
         >
           {t('request', 'back')}
         </button>

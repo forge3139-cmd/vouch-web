@@ -64,8 +64,8 @@ function Flow({ bundle }: { bundle: ConfirmationBundle }) {
 
   if (step === 'declined') {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-        <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-card-border text-2xl">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[560px] flex-col items-center justify-center px-6 text-center">
+        <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-orange-light text-2xl">
           🙏
         </div>
         <h1 className="text-xl font-extrabold text-ink">{t('decline', 'title')}</h1>

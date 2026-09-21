@@ -18,12 +18,12 @@ export default function RequestIntroStep({
   const hasEvidence = !!evidence && evidence.records_confirmed > 0
 
   return (
-    <div className="flex min-h-dvh flex-col px-6 py-10">
+    <div className="form-shell">
       <p className="mb-8 text-sm font-medium text-muted">{t('request', 'intro')}</p>
 
-      <div className="rounded-2xl border border-card-border bg-white p-5">
+      <div className="glass p-5 sm:p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-card-border text-lg font-bold text-ink">
+          <div className="icon-circle icon-circle-orange h-12 w-12 text-lg font-bold">
             {initial}
           </div>
           <div>

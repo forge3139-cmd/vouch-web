@@ -27,10 +27,10 @@ export default function AskStep({
   const claim = record.title || record.role_title || record.description || ''
 
   return (
-    <div className="flex min-h-dvh flex-col px-6 py-10">
+    <div className="form-shell">
       <p className="mb-8 text-sm font-medium text-muted">{t('ask', 'pitch')}</p>
 
-      <div className="rounded-2xl border border-card-border bg-white p-5">
+      <div className="glass p-5 sm:p-6">
         <p className="text-lg font-bold text-ink">
           {t('ask', 'askedBy', { name: worker.display_name })}
         </p>
@@ -95,7 +95,7 @@ export default function AskStep({
         <button
           type="button"
           onClick={onDecline}
-          className="w-full rounded-2xl py-4 text-sm font-semibold text-muted"
+          className="link-hover tap w-full rounded-pill py-4 text-sm font-semibold text-muted"
         >
           {t('ask', 'decline')}
         </button>
