@@ -1,4 +1,4 @@
-import { CATEGORY_LABELS, CATEGORY_VALUES, type Category } from './categories'
+import type { Category } from './categories'
 
 // Shared by server and client code — pure data and helpers only, nothing
 // that touches the database. The server-only loaders live in lib/jobs.ts
@@ -34,22 +34,43 @@ export const EMPLOYMENT_LABEL_KEYS = {
 } as const
 
 /** What's stored in job_applications.availability is the English value, so
- * the company sees readable text whatever language the applicant used. */
+ * the company sees readable text whatever language the applicant used.
+ * "Pick a date" pairs with the start_date column — see ApplicationForm. */
 export const AVAILABILITY_OPTIONS = [
   { value: 'Immediately', labelKey: 'availImmediately' },
   { value: 'Within 2 weeks', labelKey: 'availTwoWeeks' },
   { value: 'Within a month', labelKey: 'availOneMonth' },
-  { value: 'Not sure yet', labelKey: 'availNotSure' },
+  { value: 'Pick a date', labelKey: 'availPickDate' },
 ] as const
 
 export const AVAILABILITY_VALUES: readonly string[] = AVAILABILITY_OPTIONS.map((o) => o.value)
 
-/** Capability chips are the directory's trades (bilingual labels already
- * exist). "Other" isn't a chip — the free-text box covers it. The English
- * label is what gets stored. */
-export const CAPABILITY_CHIPS: Category[] = CATEGORY_VALUES.filter((c) => c !== 'other')
+/** Tanzanian trade qualifications only — deliberately no EPA, NATE or any
+ * US licence. Stored as job_applications.qualifications (text[]); a
+ * person can hold more than one, except 'none_yet' which the form treats
+ * as exclusive of the others. */
+export const QUALIFICATION_OPTIONS = [
+  { value: 'veta_trade_test_3', labelKey: 'qualVetaTradeTest3' },
+  { value: 'veta_trade_test_2', labelKey: 'qualVetaTradeTest2' },
+  { value: 'veta_trade_test_1', labelKey: 'qualVetaTradeTest1' },
+  { value: 'veta_certificate', labelKey: 'qualVetaCertificate' },
+  { value: 'nactvet_diploma', labelKey: 'qualNactvetDiploma' },
+  { value: 'driving_licence', labelKey: 'qualDrivingLicence' },
+  { value: 'none_yet', labelKey: 'qualNoneYet' },
+] as const
 
-export const CAPABILITY_CHIP_EN_LABELS: readonly string[] = CAPABILITY_CHIPS.map((c) => CATEGORY_LABELS[c].en)
+export const QUALIFICATION_VALUES: readonly string[] = QUALIFICATION_OPTIONS.map((o) => o.value)
+
+/** Structured, not free text, so the company can scan it at a glance. */
+export const YEARS_EXPERIENCE_OPTIONS = [
+  { value: 'entry_level', labelKey: 'yearsEntryLevel' },
+  { value: 'less_than_1', labelKey: 'yearsLessThan1' },
+  { value: '1_to_3', labelKey: 'years1to3' },
+  { value: '3_to_5', labelKey: 'years3to5' },
+  { value: '5_plus', labelKey: 'years5Plus' },
+] as const
+
+export const YEARS_EXPERIENCE_VALUES: readonly string[] = YEARS_EXPERIENCE_OPTIONS.map((o) => o.value)
 
 export const STATUS_LABEL_KEYS = {
   new: 'statusNew',

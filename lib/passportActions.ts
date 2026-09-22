@@ -129,10 +129,12 @@ export async function withdrawApplicationAction(applicationId: string): Promise<
       updated_at: now,
       name: 'Withdrawn applicant',
       phone: '',
-      experience: '',
+      work_history: '',
+      years_experience: null,
+      qualifications: [],
       capabilities: '',
       availability: null,
-      past_work: null,
+      start_date: null,
     })
     .eq('id', application.id)
     .eq('applicant_identity_id', applicant.identityId)
