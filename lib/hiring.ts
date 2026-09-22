@@ -84,25 +84,6 @@ export function formatSalary(job: Pick<PublicJob, 'salary_min' | 'salary_max' | 
   return null
 }
 
-/**
- * Normalises a phone number so tap-to-call works and the same person
- * can't apply twice by typing it two ways. Tanzanian local format
- * (0712 345 678) and 255… both become +255712345678; anything else keeps
- * its digits and an optional leading +. Returns null if it doesn't look
- * like a real number (7–15 digits).
- */
-export function normalizePhone(raw: string): string | null {
-  const trimmed = raw.trim()
-  const hasPlus = trimmed.startsWith('+')
-  let digits = trimmed.replace(/\D/g, '')
-  if (digits.length < 7 || digits.length > 15) return null
-
-  if (!hasPlus && digits.length === 10 && digits.startsWith('0')) {
-    digits = `255${digits.slice(1)}`
-    return `+${digits}`
-  }
-  if (!hasPlus && digits.startsWith('255') && digits.length === 12) {
-    return `+${digits}`
-  }
-  return hasPlus ? `+${digits}` : digits
-}
+// Phone normalisation lives in ./phone (lib/phone.ts) — the ONE copy shared
+// verbatim with the mobile app. Import normalizePhone/parseContact/
+// storableContact/telUrl from there, not from here.

@@ -5,8 +5,15 @@ import { getSignedInApplicant, toApplicantView } from '@/lib/auth/session'
 
 export const dynamic = 'force-dynamic'
 
-export default async function PublicJobPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PublicJobPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ resume?: string; googleError?: string }>
+}) {
   const { slug } = await params
+  const { resume, googleError } = await searchParams
   const result = await loadPublicJob(slug)
 
   if (result.status === 'not_found') {
@@ -18,5 +25,15 @@ export default async function PublicJobPage({ params }: { params: Promise<{ slug
   // cookie cost no extra work here at all.
   const applicant = await getSignedInApplicant()
 
-  return <JobPage job={result.job} initialApplicant={applicant ? toApplicantView(applicant) : null} />
+  return (
+    <JobPage
+      job={result.job}
+      initialApplicant={applicant ? toApplicantView(applicant) : null}
+      // Set only right after a Google round trip (see the callback route),
+      // so a signed-in visitor lands straight back in the form they were
+      // filling in rather than on the job's overview.
+      resumeApply={resume === '1'}
+      initialAuthError={googleError === '1' ? 'googleFailed' : null}
+    />
+  )
 }

@@ -337,7 +337,10 @@ export const dictionaries = {
       errSetup: 'We couldn’t finish setting up your profile. Please try again.',
       errTooMany: 'Too many attempts. Please try again later.',
       errUnconfigured: 'Sign-in isn’t available right now. Please try again later.',
+      errGoogleFailed: 'Google sign-in didn’t work. Please try again, or use email and password.',
       errGeneric: 'Something went wrong. Please try again.',
+      continueWithGoogle: 'Continue with Google',
+      orContinueWith: 'or continue with phone/email',
     },
   },
   sw: {
@@ -676,7 +679,10 @@ export const dictionaries = {
       errSetup: 'Hatukuweza kukamilisha wasifu wako. Tafadhali jaribu tena.',
       errTooMany: 'Majaribio mengi sana. Tafadhali jaribu tena baadaye.',
       errUnconfigured: 'Kuingia hakupatikani sasa. Tafadhali jaribu tena baadaye.',
+      errGoogleFailed: 'Kuingia kwa Google hakukufanya kazi. Tafadhali jaribu tena, au tumia simu/barua pepe na nenosiri.',
       errGeneric: 'Hitilafu imetokea. Tafadhali jaribu tena.',
+      continueWithGoogle: 'Endelea na Google',
+      orContinueWith: 'au endelea na simu/barua pepe',
     },
   },
 } as const

@@ -3,6 +3,7 @@
 import { getSupabaseServerClient } from './supabase'
 import { getClientIp, recordAttempt } from './rateLimit'
 import { MAX_PHOTOS_PER_SUBMISSION, validateImageFile } from './fileValidation'
+import { storableContact } from './phone'
 
 export interface SubmitWorkRequestResult {
   ok: boolean
@@ -76,7 +77,10 @@ export async function submitWorkRequestAction(formData: FormData): Promise<Submi
       location_lng: Number.isFinite(locationLng) ? locationLng : null,
       needed_by: neededBy || null,
       client_name: clientName.trim(),
-      client_phone: clientPhone.trim(),
+      // Same rule everywhere: 0712… is stored as +255712…, matching how the
+      // mobile app treats this same field when it copies it onto a
+      // confirmation link (storableContact(request.client_phone)).
+      client_phone: storableContact(clientPhone),
       status: 'pending',
     })
     .select('id')

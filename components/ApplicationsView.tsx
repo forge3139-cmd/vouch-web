@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { LanguageProvider, useLanguage, useT } from '@/components/LanguageContext'
 import LangToggle from '@/components/ui/LangToggle'
 import AuthPanel from '@/components/job/AuthPanel'
-import { signOutAction } from '@/lib/auth/authActions'
+import { signOutAction, type AuthErrorCode } from '@/lib/auth/authActions'
 import { withdrawApplicationAction } from '@/lib/passportActions'
 import { EMPLOYMENT_LABEL_KEYS, STATUS_LABEL_KEYS, type ApplicationStatus } from '@/lib/hiring'
 import type { MyApplication } from '@/lib/myApplications'
@@ -19,6 +19,8 @@ export interface ApplicationsViewProps {
   /** Null = the lookup failed; [] = genuinely none. */
   recommended: RecommendedJob[] | null
   hasTrade: boolean
+  /** Set right after a failed Google round trip. */
+  initialAuthError?: AuthErrorCode | null
 }
 
 export default function ApplicationsView(props: ApplicationsViewProps) {
@@ -31,7 +33,9 @@ export default function ApplicationsView(props: ApplicationsViewProps) {
 
 const ACCENTS = ['orange', 'blue', 'green'] as const
 
-function ApplicationsInner({ signedIn, items, loadFailed, recommended, hasTrade }: ApplicationsViewProps) {
+function ApplicationsInner({
+  signedIn, items, loadFailed, recommended, hasTrade, initialAuthError = null,
+}: ApplicationsViewProps) {
   const { lang } = useLanguage()
   const t = useT()
   const router = useRouter()
@@ -66,7 +70,12 @@ function ApplicationsInner({ signedIn, items, loadFailed, recommended, hasTrade 
           <h1 className="text-2xl font-extrabold text-ink">{t('applied', 'signInTitle')}</h1>
           <p className="mt-2 text-sm text-muted">{t('auth', 'intro')}</p>
           <div className="mt-2">
-            <AuthPanel showTitle={false} onSignedIn={() => router.refresh()} />
+            <AuthPanel
+              showTitle={false}
+              next="/applications"
+              onSignedIn={() => router.refresh()}
+              initialError={initialAuthError}
+            />
           </div>
         </div>
       ) : (

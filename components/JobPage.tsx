@@ -10,6 +10,7 @@ import ApplicationForm, { EMPTY_DRAFT, type ApplicationDraft } from '@/component
 import PassportConsent from '@/components/job/PassportConsent'
 import ApplicationSent from '@/components/job/ApplicationSent'
 import type { ApplicationErrorCode } from '@/lib/applicationActions'
+import type { AuthErrorCode } from '@/lib/auth/authActions'
 import type { ApplicantView } from '@/lib/auth/session'
 import { EMPLOYMENT_LABEL_KEYS, formatSalary, isJobClosed, type PublicJob } from '@/lib/hiring'
 import { once, trackFunnel } from '@/lib/funnelClient'
@@ -19,14 +20,25 @@ type Step = 'view' | 'auth' | 'apply' | 'consent' | 'sent'
 export default function JobPage({
   job,
   initialApplicant,
+  resumeApply = false,
+  initialAuthError = null,
 }: {
   job: PublicJob
   /** Set when the visitor already has a valid session. Name and phone only. */
   initialApplicant: ApplicantView | null
+  /** True right after a Google round trip — skip straight to the form. */
+  resumeApply?: boolean
+  /** Set when a Google round trip failed, so AuthPanel shows it immediately. */
+  initialAuthError?: AuthErrorCode | null
 }) {
   return (
     <LanguageProvider>
-      <JobInner job={job} initialApplicant={initialApplicant} />
+      <JobInner
+        job={job}
+        initialApplicant={initialApplicant}
+        resumeApply={resumeApply}
+        initialAuthError={initialAuthError}
+      />
     </LanguageProvider>
   )
 }
@@ -58,10 +70,26 @@ function readDraft(slug: string): ApplicationDraft {
   }
 }
 
-function JobInner({ job, initialApplicant }: { job: PublicJob; initialApplicant: ApplicantView | null }) {
+function JobInner({
+  job,
+  initialApplicant,
+  resumeApply,
+  initialAuthError,
+}: {
+  job: PublicJob
+  initialApplicant: ApplicantView | null
+  resumeApply: boolean
+  initialAuthError: AuthErrorCode | null
+}) {
   const { lang } = useLanguage()
   const t = useT()
-  const [step, setStep] = useState<Step>('view')
+  // A signed-in visitor coming straight back from Google lands on the form,
+  // not the job overview — "return them straight to the application". One
+  // that failed lands back on the auth step with the error already shown,
+  // rather than silently back at the overview.
+  const [step, setStep] = useState<Step>(
+    initialApplicant && resumeApply ? 'apply' : initialAuthError ? 'auth' : 'view'
+  )
   const [applicant, setApplicant] = useState<ApplicantView | null>(initialApplicant)
   const [formNotice, setFormNotice] = useState<ApplicationErrorCode | null>(null)
   const [draft, setDraft] = useState<ApplicationDraft>(() => {
@@ -129,7 +157,12 @@ function JobInner({ job, initialApplicant }: { job: PublicJob; initialApplicant:
           <LangToggle />
         </div>
         <div className="mt-6">
-          <AuthPanel jobSlug={job.slug} onSignedIn={handleSignedIn} />
+          <AuthPanel
+            jobSlug={job.slug}
+            next={`/j/${job.slug}?resume=1`}
+            onSignedIn={handleSignedIn}
+            initialError={initialAuthError}
+          />
           <p className="mt-6 text-center text-xs text-muted">{t('auth', 'keptNote')}</p>
         </div>
       </div>

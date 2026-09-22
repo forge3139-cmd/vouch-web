@@ -5,9 +5,8 @@ import { getClientIp, recordAttempt } from './rateLimit'
 import { recordFunnelEvent } from './funnel'
 import { getSignedInApplicant } from './auth/session'
 import { passportScope } from './passport'
-import {
-  AVAILABILITY_VALUES, CAPABILITY_CHIP_EN_LABELS, isJobClosed, normalizePhone, type PublicJob,
-} from './hiring'
+import { AVAILABILITY_VALUES, CAPABILITY_CHIP_EN_LABELS, isJobClosed, type PublicJob } from './hiring'
+import { normalizePhone } from './phone'
 
 export type ApplicationErrorCode =
   | 'required'

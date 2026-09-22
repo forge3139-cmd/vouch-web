@@ -5,11 +5,26 @@ import { loadRecommendedJobs } from '@/lib/recommendedJobs'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ApplicationsPage() {
+export default async function ApplicationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ googleError?: string }>
+}) {
+  const { googleError } = await searchParams
+  const initialAuthError = googleError === '1' ? ('googleFailed' as const) : null
   const applicant = await getSignedInApplicant()
 
   if (!applicant) {
-    return <ApplicationsView signedIn={false} items={[]} loadFailed={false} recommended={[]} hasTrade={false} />
+    return (
+      <ApplicationsView
+        signedIn={false}
+        items={[]}
+        loadFailed={false}
+        recommended={[]}
+        hasTrade={false}
+        initialAuthError={initialAuthError}
+      />
+    )
   }
 
   const hasTrade = applicant.category !== null
