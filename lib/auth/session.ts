@@ -16,16 +16,23 @@ export interface SignedInApplicant {
   slug: string | null
   /** identities.category — their trade. Null until they choose one in the app. */
   category: string | null
+  /** Set to now() when they last opened a jobs list. Null = never. */
+  jobsLastSeenAt: string | null
+  jobAlertsEnabled: boolean
 }
 
-/** What the browser is allowed to know: enough to prefill and greet. */
+/** What the browser is allowed to know: enough to prefill and greet.
+ * `category` is public information already (shown on the directory and the
+ * app), so it's safe here — used only to pre-check a matching capability
+ * chip on a first-ever application. */
 export interface ApplicantView {
   name: string
   phone: string
+  category: string | null
 }
 
 export function toApplicantView(applicant: SignedInApplicant): ApplicantView {
-  return { name: applicant.name, phone: applicant.phone }
+  return { name: applicant.name, phone: applicant.phone, category: applicant.category }
 }
 
 interface IdentityRow {
@@ -33,6 +40,8 @@ interface IdentityRow {
   display_name: string
   slug: string | null
   category: string | null
+  jobs_last_seen_at: string | null
+  job_alerts_enabled: boolean
 }
 
 /** Turns a verified auth user into an applicant by finding their identities
@@ -41,7 +50,7 @@ export async function loadApplicantForUser(user: User): Promise<SignedInApplican
   const supabase = getSupabaseServerClient()
   const { data: identity } = await supabase
     .from('identities')
-    .select('id, display_name, slug, category')
+    .select('id, display_name, slug, category, jobs_last_seen_at, job_alerts_enabled')
     .eq('auth_user_id', user.id)
     .maybeSingle<IdentityRow>()
   if (!identity) return null
@@ -65,6 +74,8 @@ export async function loadApplicantForUser(user: User): Promise<SignedInApplican
     phone,
     slug,
     category: identity.category,
+    jobsLastSeenAt: identity.jobs_last_seen_at,
+    jobAlertsEnabled: identity.job_alerts_enabled,
   }
 }
 

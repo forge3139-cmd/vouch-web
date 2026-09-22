@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { LanguageProvider, useLanguage, useT } from '@/components/LanguageContext'
@@ -8,9 +8,12 @@ import LangToggle from '@/components/ui/LangToggle'
 import AuthPanel from '@/components/job/AuthPanel'
 import { signOutAction, type AuthErrorCode } from '@/lib/auth/authActions'
 import { withdrawApplicationAction } from '@/lib/passportActions'
+import { markJobsSeenAction } from '@/lib/jobAlertsActions'
+import { markNotificationReadAction } from '@/lib/notificationActions'
 import { EMPLOYMENT_LABEL_KEYS, STATUS_LABEL_KEYS, type ApplicationStatus } from '@/lib/hiring'
 import type { MyApplication } from '@/lib/myApplications'
 import type { RecommendedJob } from '@/lib/recommendedJobs'
+import type { AppNotification } from '@/lib/notifications'
 
 export interface ApplicationsViewProps {
   signedIn: boolean
@@ -19,6 +22,9 @@ export interface ApplicationsViewProps {
   /** Null = the lookup failed; [] = genuinely none. */
   recommended: RecommendedJob[] | null
   hasTrade: boolean
+  /** Worked out from the OLD jobs_last_seen_at, before this visit marks it seen. */
+  newJobsCount: number
+  notifications: AppNotification[]
   /** Set right after a failed Google round trip. */
   initialAuthError?: AuthErrorCode | null
 }
@@ -34,11 +40,36 @@ export default function ApplicationsView(props: ApplicationsViewProps) {
 const ACCENTS = ['orange', 'blue', 'green'] as const
 
 function ApplicationsInner({
-  signedIn, items, loadFailed, recommended, hasTrade, initialAuthError = null,
+  signedIn, items, loadFailed, recommended, hasTrade, newJobsCount, notifications, initialAuthError = null,
 }: ApplicationsViewProps) {
   const { lang } = useLanguage()
   const t = useT()
   const router = useRouter()
+  const [notifs, setNotifs] = useState(notifications)
+  const [highlightId, setHighlightId] = useState<string | null>(null)
+
+  // This visit already read the count above from the OLD last-seen time;
+  // bumping it now (fire-and-forget) is what makes the NEXT visit's count
+  // smaller rather than showing the same jobs as "new" forever.
+  useEffect(() => {
+    if (signedIn) markJobsSeenAction().catch(() => {})
+  }, [signedIn])
+
+  function openNotification(n: AppNotification) {
+    if (!n.read_at) {
+      setNotifs((current) => current.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)))
+      markNotificationReadAction(n.id).catch(() => {})
+    }
+    const applicationId = n.data.application_id
+    if (!applicationId) return
+    setHighlightId(applicationId)
+    // The element already exists in the DOM (it's below on this same page) —
+    // no navigation needed, just bring it into view and mark it.
+    requestAnimationFrame(() => {
+      document.getElementById(`app-${applicationId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+    setTimeout(() => setHighlightId((current) => (current === applicationId ? null : current)), 2500)
+  }
 
   const dateLocale = lang === 'sw' ? 'sw-TZ' : 'en-GB'
   const fmt = (iso: string) =>
@@ -93,6 +124,8 @@ function ApplicationsInner({
             </p>
           ) : (
             <>
+              <NotificationsBanner notifications={notifs.filter((n) => !n.read_at)} onOpen={openNotification} />
+
               {/* Who can see the passport right now. */}
               <section className="glass mt-6 p-card" aria-labelledby="access-heading">
                 <h2 id="access-heading" className="text-sm font-extrabold text-ink">
@@ -120,12 +153,18 @@ function ApplicationsInner({
               ) : (
                 <ul className="mt-4 space-y-3">
                   {items.map((item, i) => (
-                    <ApplicationCard key={item.id} item={item} accent={ACCENTS[i % 3]} fmt={fmt} />
+                    <ApplicationCard
+                      key={item.id}
+                      item={item}
+                      accent={ACCENTS[i % 3]}
+                      fmt={fmt}
+                      highlighted={highlightId === item.id}
+                    />
                   ))}
                 </ul>
               )}
 
-              <Recommendations recommended={recommended} hasTrade={hasTrade} />
+              <Recommendations recommended={recommended} hasTrade={hasTrade} newJobsCount={newJobsCount} />
             </>
           )}
         </>
@@ -138,10 +177,12 @@ function ApplicationCard({
   item,
   accent,
   fmt,
+  highlighted = false,
 }: {
   item: MyApplication
   accent: 'orange' | 'blue' | 'green'
   fmt: (iso: string) => string
+  highlighted?: boolean
 }) {
   const t = useT()
   const router = useRouter()
@@ -176,7 +217,12 @@ function ApplicationCard({
           : null
 
   return (
-    <li className={`glass-solid accent-bar accent-${accent} p-card ${item.withdrawn ? 'opacity-70' : ''}`}>
+    <li
+      id={`app-${item.id}`}
+      className={`glass-solid accent-bar accent-${accent} p-card transition-shadow ${item.withdrawn ? 'opacity-70' : ''} ${
+        highlighted ? 'ring-2 ring-orange' : ''
+      }`}
+    >
       <p className="text-base font-extrabold text-ink">{item.jobTitle}</p>
       <p className="text-sm text-muted">{item.companyName}</p>
       <p className="mt-2 text-xs font-semibold text-neutral">{t('applied', 'appliedOn', { date: fmt(item.appliedAt) })}</p>
@@ -247,15 +293,83 @@ function ApplicationCard({
 }
 
 /** Open jobs in the same trade as the person's profile. Nothing smarter. */
-function Recommendations({ recommended, hasTrade }: { recommended: RecommendedJob[] | null; hasTrade: boolean }) {
+function notificationTimeAgo(iso: string): string {
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
+  if (mins < 1) return 'now'
+  if (mins < 60) return `${mins}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h`
+  return `${Math.floor(hours / 24)}d`
+}
+
+/** Unread notifications sit at the top of this page — that's the whole
+ * "how does an applicant learn their status" loop on the web. Tapping one
+ * marks it read and scrolls to the application it's about, already lower
+ * on this same page. Renders nothing once there's nothing unread. */
+function NotificationsBanner({ notifications, onOpen }: { notifications: AppNotification[]; onOpen: (n: AppNotification) => void }) {
+  const t = useT()
+  if (notifications.length === 0) return null
+
+  return (
+    <section className="mt-6" aria-labelledby="notif-heading">
+      <h2 id="notif-heading" className="text-sm font-extrabold text-ink">
+        {t('applied', 'notifTitle')}
+      </h2>
+      <ul className="mt-3 space-y-2">
+        {notifications.map((n) => (
+          <li key={n.id}>
+            <button
+              type="button"
+              onClick={() => onOpen(n)}
+              className="glass tap flex w-full items-start gap-3 p-card text-left"
+            >
+              <span className="icon-circle icon-circle-orange h-9 w-9 shrink-0">
+                <BellIcon />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold text-ink">{n.title}</span>
+                <span className="mt-0.5 block text-sm text-neutral">{n.body}</span>
+              </span>
+              <span className="shrink-0 text-xs text-muted">{notificationTimeAgo(n.created_at)}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  )
+}
+
+function Recommendations({
+  recommended, hasTrade, newJobsCount,
+}: {
+  recommended: RecommendedJob[] | null
+  hasTrade: boolean
+  newJobsCount: number
+}) {
   const { lang } = useLanguage()
   const t = useT()
 
   return (
     <section className="mt-8" aria-labelledby="rec-heading">
-      <h2 id="rec-heading" className="text-lg font-extrabold text-ink">
-        {t('applied', 'recTitle')}
-      </h2>
+      <div className="flex items-center gap-2.5">
+        <h2 id="rec-heading" className="text-lg font-extrabold text-ink">
+          {t('applied', 'recTitle')}
+        </h2>
+        {newJobsCount > 0 && (
+          <span className="rounded-pill bg-orange px-2.5 py-1 text-xs font-bold text-white">
+            {t('applied', 'recNew', { count: newJobsCount })}
+          </span>
+        )}
+      </div>
 
       {!hasTrade ? (
         <p className="glass mt-3 p-card text-sm text-muted">{t('applied', 'recNoTrade')}</p>

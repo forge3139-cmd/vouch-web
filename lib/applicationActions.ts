@@ -1,11 +1,10 @@
 'use server'
 
-import { getSupabaseServerClient } from './supabase'
+import { createAuthClient } from './auth/client'
 import { getClientIp, recordAttempt } from './rateLimit'
 import { recordFunnelEvent } from './funnel'
 import { getSignedInApplicant } from './auth/session'
-import { passportScope } from './passport'
-import { AVAILABILITY_VALUES, CAPABILITY_CHIP_EN_LABELS, isJobClosed, type PublicJob } from './hiring'
+import { AVAILABILITY_VALUES, CAPABILITY_CHIP_EN_LABELS } from './hiring'
 import { normalizePhone } from './phone'
 
 export type ApplicationErrorCode =
@@ -31,17 +30,27 @@ const MAX_CAPABILITY_TEXT = 500
 const MAX_PAST_WORK = 1500
 const MAX_CHIPS = 8
 
+const RPC_ERRORS: Record<string, ApplicationErrorCode> = {
+  not_signed_in: 'signedOut',
+  not_found: 'generic',
+  closed: 'closed',
+  already_applied: 'alreadyApplied',
+}
+
 /**
  * Nothing is shared without consent: the form field `consent` must be
  * "yes", which only the consent panel's "Share and apply" button sends.
- * The grant recorded in access_grants states, per job, who agreed to share
- * what and when.
  *
- * Applicants must be signed in. The session is verified here on the server
- * (getUser, not a cookie's say-so) and the identity id that lands on the
- * application comes from THAT session — never from anything the browser
- * sent, so nobody can apply as someone else. The insert uses the
- * service-role client, same pattern as work requests.
+ * Field validation (trimming, length limits, phone normalisation, and
+ * checking there's something to submit at all) happens here, same as
+ * always. The RULES — job still open, before the deadline, one
+ * application per account — live in ONE place: the submit_job_application
+ * database function (vouch-jobs-in-app.sql), which both this action and
+ * the mobile app call. Calling it through the AUTH client (not the
+ * service-role client used elsewhere in this file's history) is what lets
+ * the function work out who's applying from the verified session itself
+ * (current_identity_id()) rather than from anything this code passes it —
+ * the same guarantee the mobile app gets for free from its own session.
  *
  * Returns error CODES so the client can show them in the applicant's
  * language. 'signedOut' means the session ended mid-form; the client sends
@@ -83,70 +92,33 @@ export async function submitApplicationAction(formData: FormData): Promise<Submi
   const phone = normalizePhone(phoneRaw)
   if (!phone) return { ok: false, error: 'phone' }
 
-  const supabase = getSupabaseServerClient()
-
-  const { data: job } = await supabase
-    .from('jobs')
-    .select('id, poster_id, status, deadline')
-    .eq('slug', slug)
-    .maybeSingle<{ id: string; poster_id: string } & Pick<PublicJob, 'status' | 'deadline'>>()
-
-  if (!job) return { ok: false, error: 'generic' }
-  if (isJobClosed(job)) return { ok: false, error: 'closed' }
-
-  const { data: existing } = await supabase
-    .from('job_applications')
-    .select('id')
-    .eq('job_id', job.id)
-    .eq('applicant_identity_id', applicant.identityId)
-    .is('withdrawn_at', null)
-    .limit(1)
-  if (existing && existing.length > 0) return { ok: false, error: 'alreadyApplied' }
-
   const capabilities = [...chips, capabilityText.slice(0, MAX_CAPABILITY_TEXT)].filter(Boolean).join(', ')
 
-  // The client isn't typed against a generated Database schema (see lib/supabase.ts), so inserts need the cast.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: created, error } = await (supabase.from('job_applications') as any)
-    .insert({
-      job_id: job.id,
-      applicant_identity_id: applicant.identityId,
-      name: name.slice(0, MAX_NAME),
-      phone,
-      experience: experience.slice(0, MAX_EXPERIENCE),
-      capabilities,
-      availability,
-      past_work: pastWork ? pastWork.slice(0, MAX_PAST_WORK) : null,
-    })
-    .select('id')
-    .single()
+  // Need the job's id, not just its slug — but only to hand it to the RPC;
+  // the RPC re-checks status/deadline itself rather than trusting this.
+  const supabase = await createAuthClient()
+  const { data: job } = await supabase.from('jobs').select('id').eq('slug', slug).maybeSingle<{ id: string }>()
+  if (!job) return { ok: false, error: 'generic' }
 
-  if (error || !created) {
-    // 23505 = the one-live-application-per-person index caught a double submit.
-    if (error?.code === '23505') return { ok: false, error: 'alreadyApplied' }
-    console.error('[submitApplicationAction] job_applications insert failed', error)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc('submit_job_application', {
+    p_job_id: job.id,
+    p_name: name.slice(0, MAX_NAME),
+    p_phone: phone,
+    p_experience: experience.slice(0, MAX_EXPERIENCE),
+    p_capabilities: capabilities,
+    p_availability: availability,
+    p_past_work: pastWork ? pastWork.slice(0, MAX_PAST_WORK) : null,
+  })
+
+  if (error) {
+    console.error('[submitApplicationAction] submit_job_application rpc failed', error)
     return { ok: false, error: 'generic' }
   }
 
-  // The consent record: who (subject) agreed to show whom (grantee, the
-  // company), for which job, exactly what, and when (granted_at defaults
-  // to now). Access ends when the job closes or the applicant withdraws.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error: grantError } = await (supabase.from('access_grants') as any).insert({
-    subject_id: applicant.identityId,
-    grantee_id: job.poster_id,
-    job_id: job.id,
-    scope: passportScope(),
-  })
-
-  if (grantError) {
-    // No consent record means nothing may be shared — so there must be no
-    // application either. Undo it rather than leave a half-applied state
-    // where the company holds answers with no record of agreement.
-    console.error('[submitApplicationAction] access_grants insert failed', grantError)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('job_applications') as any).delete().eq('id', created.id)
-    return { ok: false, error: 'generic' }
+  const result = data as { ok: boolean; error?: string; application_id?: string }
+  if (!result.ok) {
+    return { ok: false, error: RPC_ERRORS[result.error ?? ''] ?? 'generic' }
   }
 
   await recordFunnelEvent({

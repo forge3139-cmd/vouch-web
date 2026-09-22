@@ -1,10 +1,12 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { useLanguage, useT } from '@/components/LanguageContext'
 import LangToggle from '@/components/ui/LangToggle'
 import Button from '@/components/ui/Button'
 import RadioPills from '@/components/ui/RadioPills'
 import type { ApplicationErrorCode } from '@/lib/applicationActions'
+import { loadApplicationPrefillAction } from '@/lib/applicationPrefillActions'
 import { signOutAction } from '@/lib/auth/authActions'
 import type { ApplicantView } from '@/lib/auth/session'
 import { CATEGORY_LABELS } from '@/lib/categories'
@@ -67,6 +69,48 @@ export default function ApplicationForm({
 }) {
   const { lang } = useLanguage()
   const t = useT()
+
+  // One-tap apply: prefill from their most recent application (or, failing
+  // that, their profile's trade) — but only into a genuinely fresh draft.
+  // draftRef stays current every render so the check below, which runs
+  // after an await, sees what's ACTUALLY in the form then, not what was
+  // there when this effect started.
+  const draftRef = useRef(draft)
+  useEffect(() => {
+    draftRef.current = draft
+  }, [draft])
+  const prefillChecked = useRef(false)
+
+  useEffect(() => {
+    if (prefillChecked.current) return
+    prefillChecked.current = true
+
+    loadApplicationPrefillAction()
+      .then((prefill) => {
+        if (!prefill) return
+        const current = draftRef.current
+        const isFreshDraft =
+          !current.experience.trim() &&
+          current.chips.length === 0 &&
+          !current.capabilityText.trim() &&
+          !current.availability &&
+          !current.pastWork.trim()
+        if (!isFreshDraft) return
+
+        onDraftChange({
+          experience: prefill.experience,
+          chips: prefill.chips,
+          capabilityText: prefill.capabilityText,
+          availability: prefill.availability,
+          pastWork: prefill.pastWork,
+        })
+      })
+      .catch(() => {
+        // A missed prefill just means an empty form, same as before this existed.
+      })
+    // Once, on mount — see prefillChecked above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const canSubmit =
     draft.name.trim() &&

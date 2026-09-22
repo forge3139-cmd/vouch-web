@@ -18,6 +18,7 @@ export interface PublicJob {
   requirements: string
   location: string
   employment_type: EmploymentType
+  category: Category | null
   salary_min: number | null
   salary_max: number | null
   salary_currency: string
