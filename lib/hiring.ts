@@ -14,8 +14,10 @@ export interface PublicJob {
   slug: string
   title: string
   company_name: string
-  description: string
-  requirements: string
+  /** Was two columns (description + requirements) before Post a Job
+   * merged them into one "Job Details" field on the mobile poster form —
+   * see vouch-jobs-merge-details.sql. */
+  details: string
   location: string
   employment_type: EmploymentType
   category: Category | null

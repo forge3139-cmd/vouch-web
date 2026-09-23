@@ -240,16 +240,6 @@ function JobInner({
               {t('job', 'applyBy', { date: formatDeadline(job.deadline, lang) })}
             </li>
           </ul>
-
-          {!closed && (
-            <button
-              type="button"
-              onClick={handleApply}
-              className="btn btn-dark tap mt-6 w-full py-4 text-base active:opacity-80"
-            >
-              {t('job', 'apply')}
-            </button>
-          )}
         </section>
 
         {closed && (
@@ -265,13 +255,8 @@ function JobInner({
         )}
 
         <div className="glass mt-4 p-card">
-          <p className="text-[11px] font-bold tracking-wide text-muted">{t('job', 'descriptionLabel')}</p>
-          <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-ink">{job.description}</p>
-        </div>
-
-        <div className="glass mt-4 p-card">
-          <p className="text-[11px] font-bold tracking-wide text-muted">{t('job', 'requirementsLabel')}</p>
-          <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-ink">{job.requirements}</p>
+          <p className="text-[11px] font-bold tracking-wide text-muted">{t('job', 'detailsLabel')}</p>
+          <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-ink">{job.details}</p>
         </div>
 
         {!closed && (
