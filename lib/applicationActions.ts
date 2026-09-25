@@ -5,8 +5,7 @@ import { getClientIp, recordAttempt } from './rateLimit'
 import { recordFunnelEvent } from './funnel'
 import { getSignedInApplicant } from './auth/session'
 import { AVAILABILITY_VALUES, QUALIFICATION_VALUES, YEARS_EXPERIENCE_VALUES, todayInEastAfrica } from './hiring'
-import { skillEnLabels } from './skills'
-import type { Category } from './categories'
+import { categoryFromTags, skillEnLabels } from './skills'
 import { normalizePhone } from './phone'
 
 export type ApplicationErrorCode =
@@ -87,12 +86,12 @@ export async function submitApplicationAction(formData: FormData): Promise<Submi
   const supabase = await createAuthClient()
   const { data: job } = await supabase
     .from('jobs')
-    .select('id, category')
+    .select('id, expertise_tags')
     .eq('slug', slug)
-    .maybeSingle<{ id: string; category: Category | null }>()
+    .maybeSingle<{ id: string; expertise_tags: string[] | null }>()
   if (!job) return { ok: false, error: 'generic' }
 
-  const validSkills = skillEnLabels(job.category)
+  const validSkills = skillEnLabels(categoryFromTags(job.expertise_tags))
   const chips = Array.from(
     new Set(formData.getAll('capability').map(String).filter((c) => validSkills.includes(c)))
   ).slice(0, MAX_CHIPS)

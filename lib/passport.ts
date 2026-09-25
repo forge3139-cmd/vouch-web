@@ -57,8 +57,8 @@ export interface PassportPreview {
     lastConfirmedAt: string | null
   }
   standing: Standing
-  /** identities.category value, or null if they haven't chosen a trade. */
-  trade: string | null
+  /** What they typed as their expertise, verbatim. Empty if they haven't added any. */
+  expertise: string[]
   /** Completed verification layers. Empty = "not yet verified". */
   verifiedLayers: string[]
   confirmedWork: PassportConfirmedWork[]

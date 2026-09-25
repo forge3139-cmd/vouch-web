@@ -14,32 +14,31 @@ export interface SignedInApplicant {
   /** E.164-style (+255…), or '' when they signed up with email only. */
   phone: string
   slug: string | null
-  /** identities.category — their trade. Null until they choose one in the app. */
-  category: string | null
+  /** identities.expertise — what they typed as their expertise, verbatim. Empty until they add it in the app. */
+  expertise: string[]
   /** Set to now() when they last opened a jobs list. Null = never. */
   jobsLastSeenAt: string | null
   jobAlertsEnabled: boolean
 }
 
 /** What the browser is allowed to know: enough to prefill and greet.
- * `category` is public information already (shown on the directory and the
- * app), so it's safe here — used only to pre-check a matching capability
- * chip on a first-ever application. */
+ * `expertise` is public information already (shown on their profile), so
+ * it's safe here. */
 export interface ApplicantView {
   name: string
   phone: string
-  category: string | null
+  expertise: string[]
 }
 
 export function toApplicantView(applicant: SignedInApplicant): ApplicantView {
-  return { name: applicant.name, phone: applicant.phone, category: applicant.category }
+  return { name: applicant.name, phone: applicant.phone, expertise: applicant.expertise }
 }
 
 interface IdentityRow {
   id: string
   display_name: string
   slug: string | null
-  category: string | null
+  expertise: string[] | null
   jobs_last_seen_at: string | null
   job_alerts_enabled: boolean
 }
@@ -50,7 +49,7 @@ export async function loadApplicantForUser(user: User): Promise<SignedInApplican
   const supabase = getSupabaseServerClient()
   const { data: identity } = await supabase
     .from('identities')
-    .select('id, display_name, slug, category, jobs_last_seen_at, job_alerts_enabled')
+    .select('id, display_name, slug, expertise, jobs_last_seen_at, job_alerts_enabled')
     .eq('auth_user_id', user.id)
     .maybeSingle<IdentityRow>()
   if (!identity) return null
@@ -73,7 +72,7 @@ export async function loadApplicantForUser(user: User): Promise<SignedInApplican
     name: identity.display_name,
     phone,
     slug,
-    category: identity.category,
+    expertise: identity.expertise ?? [],
     jobsLastSeenAt: identity.jobs_last_seen_at,
     jobAlertsEnabled: identity.job_alerts_enabled,
   }

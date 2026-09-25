@@ -1,4 +1,3 @@
-import type { Category } from './categories'
 
 // Shared by server and client code — pure data and helpers only, nothing
 // that touches the database. The server-only loaders live in lib/jobs.ts
@@ -20,7 +19,10 @@ export interface PublicJob {
   details: string
   location: string
   employment_type: EmploymentType
-  category: Category | null
+  /** What the poster typed for the expertise they need, verbatim. */
+  expertise: string | null
+  /** Derived search tags — never displayed. */
+  expertise_tags: string[]
   salary_min: number | null
   salary_max: number | null
   salary_currency: string

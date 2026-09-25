@@ -31,19 +31,35 @@ function likePattern(raw: string): string {
   return `%${cleaned}%`
 }
 
+// Tags are lowercase letters, digits, spaces and underscores only (produced by
+// expertise_tags_for), but re-check before interpolating into a filter string.
+async function searchTags(supabase: ReturnType<typeof getSupabaseServerClient>, text: string): Promise<string[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc('expertise_tags_for', { p_raw: [text] })
+  if (error || !Array.isArray(data)) return []
+  return (data as string[]).filter((t) => /^[a-z0-9_ ]+$/.test(t))
+}
+
 export async function loadDirectory(params: DirectoryParams): Promise<DirectoryEntry[]> {
   const supabase = getSupabaseServerClient()
 
   let query = supabase.from('identities').select('*').not('slug', 'is', null).limit(RESULT_LIMIT)
 
+  // The chips are a shortcut over what people typed: a chip filters on the
+  // synonym-group tag (see vouch-expertise.sql), it isn't a field they chose.
   if (params.category && isCategory(params.category)) {
-    query = query.eq('category', params.category)
+    query = query.contains('expertise_tags', [params.category])
   }
 
   const trimmed = params.query?.trim()
   if (trimmed) {
     const pattern = likePattern(trimmed)
-    query = query.or(`display_name.ilike.${pattern},headline.ilike.${pattern},location.ilike.${pattern}`)
+    // Similar wording finds similar wording: the search text goes through the
+    // same normalise + synonym step as what people typed, and profiles
+    // sharing any tag come up too. "Might be relevant", never a ranking.
+    const tags = await searchTags(supabase, trimmed)
+    const tagFilter = tags.length > 0 ? `,expertise_tags.ov.{${tags.map((t) => `"${t}"`).join(',')}}` : ''
+    query = query.or(`display_name.ilike.${pattern},headline.ilike.${pattern},location.ilike.${pattern}${tagFilter}`)
   }
 
   const { data: identities, error } = await query

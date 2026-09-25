@@ -17,7 +17,7 @@ interface FactsJson {
     last_confirmed_at?: string | null
   }
   standing?: string
-  trade?: string | null
+  expertise?: string[]
   verified_layers?: string[]
   confirmed_work?: PassportConfirmedWork[]
 }
@@ -61,7 +61,7 @@ export async function previewPassportAction(): Promise<PreviewResult> {
         lastConfirmedAt: facts.evidence?.last_confirmed_at ?? null,
       },
       standing,
-      trade: facts.trade ?? null,
+      expertise: Array.isArray(facts.expertise) ? (facts.expertise as string[]) : [],
       verifiedLayers: facts.verified_layers ?? [],
       confirmedWork: facts.confirmed_work ?? [],
     },

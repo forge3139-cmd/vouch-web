@@ -2,8 +2,7 @@
 
 import { createAuthClient } from './auth/client'
 import { getSignedInApplicant } from './auth/session'
-import { skillEnLabels } from './skills'
-import type { Category } from './categories'
+import { categoryFromTags, skillEnLabels } from './skills'
 
 export interface ApplicationPrefill {
   workHistory: string
@@ -47,19 +46,19 @@ function splitCapabilities(stored: string, validLabels: readonly string[]): { ch
  * AUTH client so RLS is the real gate: an applicant can only ever read
  * their own applications (job_applications_applicant_select).
  *
- * `category` is the job being applied to NOW — skills only prefill when
- * they match that job's trade skill list; everything else still comes
+ * `expertiseTags` are the job being applied to NOW — skills only prefill when
+ * they match that job's skill list; everything else still comes
  * through as free text rather than silently vanishing.
  *
  * Returns null if there's nothing to prefill from at all — the caller
  * leaves the form empty rather than showing a placeholder as if it were
  * real data.
  */
-export async function loadApplicationPrefillAction(category: Category | null): Promise<ApplicationPrefill | null> {
+export async function loadApplicationPrefillAction(expertiseTags: string[]): Promise<ApplicationPrefill | null> {
   const applicant = await getSignedInApplicant()
   if (!applicant) return null
 
-  const validLabels = skillEnLabels(category)
+  const validLabels = skillEnLabels(categoryFromTags(expertiseTags))
 
   const supabase = await createAuthClient()
   const { data, error } = await supabase

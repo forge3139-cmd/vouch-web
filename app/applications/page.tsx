@@ -27,7 +27,7 @@ export default async function ApplicationsPage({
         items={[]}
         loadFailed={false}
         recommended={[]}
-        hasTrade={false}
+        hasExpertise={false}
         newJobsCount={0}
         notifications={[]}
         initialAuthError={initialAuthError}
@@ -35,12 +35,12 @@ export default async function ApplicationsPage({
     )
   }
 
-  const hasTrade = applicant.category !== null
-  // Only look for matching jobs if there's a trade to match; the function
-  // returns nothing without one anyway.
+  const hasExpertise = applicant.expertise.length > 0
+  // Only look for possibly-relevant jobs if there's expertise to compare;
+  // the function returns nothing without it anyway.
   const [items, recommended, notifications] = await Promise.all([
     loadMyApplications(applicant.identityId),
-    hasTrade ? loadRecommendedJobs(RECOMMENDED_FETCH_LIMIT) : Promise.resolve([]),
+    hasExpertise ? loadRecommendedJobs(RECOMMENDED_FETCH_LIMIT) : Promise.resolve([]),
     loadNotifications(),
   ])
 
@@ -59,7 +59,7 @@ export default async function ApplicationsPage({
       items={items ?? []}
       loadFailed={items === null}
       recommended={recommended ? recommended.slice(0, RECOMMENDED_DISPLAY_LIMIT) : null}
-      hasTrade={hasTrade}
+      hasExpertise={hasExpertise}
       newJobsCount={newJobsCount}
       notifications={notifications ?? []}
     />

@@ -8,7 +8,6 @@ import type { ApplicationDraft } from '@/components/job/ApplicationForm'
 import { submitApplicationAction, type ApplicationErrorCode } from '@/lib/applicationActions'
 import { previewPassportAction } from '@/lib/passportActions'
 import type { PassportPreview, Standing } from '@/lib/passport'
-import { CATEGORY_LABELS, isCategory } from '@/lib/categories'
 import type { PublicJob } from '@/lib/hiring'
 import { getVisitorId } from '@/lib/funnelClient'
 
@@ -199,7 +198,7 @@ export default function PassportConsent({
   )
 
   function buildSeeItems(p: PassportPreview): React.ReactNode[] {
-    const trade = p.trade && isCategory(p.trade) ? CATEGORY_LABELS[p.trade][lang] : null
+    const expertise = p.expertise.join(' · ')
     const layers = p.verifiedLayers.map((l) => LAYER_LABELS[l]?.[lang] ?? l).join(', ')
     const shown = p.confirmedWork.slice(0, MAX_WORK_SHOWN)
     const hidden = p.confirmedWork.length - shown.length
@@ -246,7 +245,7 @@ export default function PassportConsent({
 
       <span key="standing">{t('passport', 'seeStanding', { standing: t('passport', STANDING_KEYS[p.standing]) })}</span>,
 
-      <span key="trade">{trade ? t('passport', 'seeTrade', { trade }) : t('passport', 'tradeNone')}</span>,
+      <span key="trade">{expertise ? t('passport', 'seeExpertise', { expertise }) : t('passport', 'expertiseNone')}</span>,
 
       <span key="verified">
         {p.verifiedLayers.length > 0 ? t('passport', 'seeVerified', { layers }) : t('passport', 'seeNotVerified')}

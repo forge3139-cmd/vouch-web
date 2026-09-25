@@ -12,7 +12,7 @@ import type { ApplicantView } from '@/lib/auth/session'
 import {
   AVAILABILITY_OPTIONS, QUALIFICATION_OPTIONS, YEARS_EXPERIENCE_OPTIONS, todayInEastAfrica, type PublicJob,
 } from '@/lib/hiring'
-import { skillsForCategory } from '@/lib/skills'
+import { categoryFromTags, skillsForCategory } from '@/lib/skills'
 
 /** Everything the applicant types. Owned by the parent (JobPage), not by
  * this form, so it survives the form unmounting — for instance when a
@@ -59,7 +59,7 @@ function autoCapitalize(value: string): string {
  * from the account but stay editable. Who is applying is decided on the
  * server from the verified session, never from anything in this form.
  *
- * Skills are the job's TRADE's skills (job.category), not a generic list —
+ * Skills follow the job's expertise tags (job.expertise_tags), not a generic list —
  * a company reading applicants for an AC job sees AC skills, not "which
  * trades do you work in".
  */
@@ -86,7 +86,7 @@ export default function ApplicationForm({
 }) {
   const { lang } = useLanguage()
   const t = useT()
-  const skills = skillsForCategory(job.category)
+  const skills = skillsForCategory(categoryFromTags(job.expertise_tags))
 
   // One-tap apply: prefill from their most recent application (or, failing
   // that, their profile's trade) — but only into a genuinely fresh draft.
@@ -103,7 +103,7 @@ export default function ApplicationForm({
     if (prefillChecked.current) return
     prefillChecked.current = true
 
-    loadApplicationPrefillAction(job.category)
+    loadApplicationPrefillAction(job.expertise_tags)
       .then((prefill) => {
         if (!prefill) return
         const current = draftRef.current

@@ -13,6 +13,9 @@ export interface PassportAccess {
 export interface MyApplication {
   id: string
   status: ApplicationStatus
+  /** For not_selected: the furthest stage they reached first. */
+  stageReached: ApplicationStatus | null
+  notSelectedReason: string | null
   withdrawn: boolean
   appliedAt: string
   jobTitle: string
@@ -27,6 +30,8 @@ interface ApplicationRow {
   id: string
   job_id: string
   status: ApplicationStatus
+  stage_reached: ApplicationStatus | null
+  not_selected_reason: string | null
   withdrawn_at: string | null
   created_at: string
   jobs: JobJoin | JobJoin[] | null
@@ -57,7 +62,7 @@ export async function loadMyApplications(identityId: string): Promise<MyApplicat
 
     const { data: apps, error } = await supabase
       .from('job_applications')
-      .select('id, job_id, status, withdrawn_at, created_at, jobs(title, company_name, slug, status)')
+      .select('id, job_id, status, stage_reached, not_selected_reason, withdrawn_at, created_at, jobs(title, company_name, slug, status)')
       .eq('applicant_identity_id', identityId)
       .order('created_at', { ascending: false })
       .returns<ApplicationRow[]>()
@@ -125,6 +130,8 @@ export async function loadMyApplications(identityId: string): Promise<MyApplicat
       return [{
         id: row.id,
         status: row.status,
+        stageReached: row.stage_reached,
+        notSelectedReason: row.not_selected_reason,
         withdrawn: row.withdrawn_at !== null,
         appliedAt: row.created_at,
         jobTitle: job.title,

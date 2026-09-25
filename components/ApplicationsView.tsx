@@ -10,7 +10,8 @@ import { signOutAction, type AuthErrorCode } from '@/lib/auth/authActions'
 import { withdrawApplicationAction } from '@/lib/passportActions'
 import { markJobsSeenAction } from '@/lib/jobAlertsActions'
 import { markNotificationReadAction } from '@/lib/notificationActions'
-import { EMPLOYMENT_LABEL_KEYS, STATUS_LABEL_KEYS, type ApplicationStatus } from '@/lib/hiring'
+import { EMPLOYMENT_LABEL_KEYS } from '@/lib/hiring'
+import ApplicationTimeline from '@/components/ApplicationTimeline'
 import type { MyApplication } from '@/lib/myApplications'
 import type { RecommendedJob } from '@/lib/recommendedJobs'
 import type { AppNotification } from '@/lib/notifications'
@@ -21,7 +22,7 @@ export interface ApplicationsViewProps {
   loadFailed: boolean
   /** Null = the lookup failed; [] = genuinely none. */
   recommended: RecommendedJob[] | null
-  hasTrade: boolean
+  hasExpertise: boolean
   /** Worked out from the OLD jobs_last_seen_at, before this visit marks it seen. */
   newJobsCount: number
   notifications: AppNotification[]
@@ -40,7 +41,7 @@ export default function ApplicationsView(props: ApplicationsViewProps) {
 const ACCENTS = ['orange', 'blue', 'green'] as const
 
 function ApplicationsInner({
-  signedIn, items, loadFailed, recommended, hasTrade, newJobsCount, notifications, initialAuthError = null,
+  signedIn, items, loadFailed, recommended, hasExpertise, newJobsCount, notifications, initialAuthError = null,
 }: ApplicationsViewProps) {
   const { lang } = useLanguage()
   const t = useT()
@@ -164,7 +165,7 @@ function ApplicationsInner({
                 </ul>
               )}
 
-              <Recommendations recommended={recommended} hasTrade={hasTrade} newJobsCount={newJobsCount} />
+              <Recommendations recommended={recommended} hasExpertise={hasExpertise} newJobsCount={newJobsCount} />
             </>
           )}
         </>
@@ -227,7 +228,14 @@ function ApplicationCard({
       <p className="text-sm text-muted">{item.companyName}</p>
       <p className="mt-2 text-xs font-semibold text-neutral">{t('applied', 'appliedOn', { date: fmt(item.appliedAt) })}</p>
 
-      <StatusPill status={item.status} withdrawn={item.withdrawn} />
+      {item.withdrawn ? (
+        <p className="mt-3 inline-flex items-center gap-2 rounded-pill bg-card-border px-3 py-1.5 text-sm font-bold text-neutral">
+          <span aria-hidden="true">–</span>
+          {t('applied', 'statusWithdrawn')}
+        </p>
+      ) : (
+        <ApplicationTimeline status={item.status} stageReached={item.stageReached} reason={item.notSelectedReason} />
+      )}
 
       {accessLabel && (
         <div className="mt-3 rounded-2xl bg-white/60 p-3 text-sm">
@@ -292,7 +300,7 @@ function ApplicationCard({
   )
 }
 
-/** Open jobs in the same trade as the person's profile. Nothing smarter. */
+/** Open jobs that share wording with the expertise on the person's profile — might be relevant, never a judgement. */
 function notificationTimeAgo(iso: string): string {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
   if (mins < 1) return 'now'
@@ -349,10 +357,10 @@ function BellIcon() {
 }
 
 function Recommendations({
-  recommended, hasTrade, newJobsCount,
+  recommended, hasExpertise, newJobsCount,
 }: {
   recommended: RecommendedJob[] | null
-  hasTrade: boolean
+  hasExpertise: boolean
   newJobsCount: number
 }) {
   const { lang } = useLanguage()
@@ -371,8 +379,8 @@ function Recommendations({
         )}
       </div>
 
-      {!hasTrade ? (
-        <p className="glass mt-3 p-card text-sm text-muted">{t('applied', 'recNoTrade')}</p>
+      {!hasExpertise ? (
+        <p className="glass mt-3 p-card text-sm text-muted">{t('applied', 'recNoExpertise')}</p>
       ) : recommended === null ? (
         <p role="alert" className="mt-3 text-sm font-semibold text-red-600">
           {t('applied', 'loadError')}
@@ -405,65 +413,5 @@ function Recommendations({
         </ul>
       )}
     </section>
-  )
-}
-
-/** Plain words plus an icon, so the status never relies on colour alone. */
-function StatusPill({ status, withdrawn }: { status: ApplicationStatus; withdrawn: boolean }) {
-  const t = useT()
-  const tone = withdrawn
-    ? 'bg-card-border text-neutral'
-    : status === 'hired'
-      ? 'bg-green-tint text-green'
-      : status === 'not_selected'
-        ? 'bg-card-border text-neutral'
-        : status === 'new'
-          ? 'bg-orange-light text-orange'
-          : 'bg-blue-light text-blue'
-  return (
-    <p className={`mt-3 inline-flex items-center gap-2 rounded-pill px-3 py-1.5 text-sm font-bold ${tone}`}>
-      <span aria-hidden="true">
-        <StatusIcon status={status} withdrawn={withdrawn} />
-      </span>
-      {withdrawn ? t('applied', 'statusWithdrawn') : t('applied', STATUS_LABEL_KEYS[status])}
-    </p>
-  )
-}
-
-function StatusIcon({ status, withdrawn }: { status: ApplicationStatus; withdrawn: boolean }) {
-  const common = { viewBox: '0 0 24 24', width: 14, height: 14, fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
-  if (withdrawn) {
-    return (
-      <svg {...common}>
-        <path d="M5 12h14" />
-      </svg>
-    )
-  }
-  if (status === 'hired' || status === 'shortlisted') {
-    return (
-      <svg {...common}>
-        <path d="M5 12.5l4.5 4.5L19 7.5" />
-      </svg>
-    )
-  }
-  if (status === 'not_selected') {
-    return (
-      <svg {...common}>
-        <path d="M6 6l12 12M18 6L6 18" />
-      </svg>
-    )
-  }
-  if (status === 'interviewing') {
-    return (
-      <svg {...common}>
-        <path d="M4 5h16v10H9l-5 4V5z" />
-      </svg>
-    )
-  }
-  return (
-    <svg {...common}>
-      <circle cx="12" cy="12" r="8" />
-      {status === 'reviewed' && <path d="M12 8v4l3 2" />}
-    </svg>
   )
 }

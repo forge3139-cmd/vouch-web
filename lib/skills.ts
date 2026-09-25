@@ -5,7 +5,7 @@ import { CATEGORY_VALUES, type Category } from './categories'
  * unlike CAPABILITY_CHIPS (the old, pre-restructure list of trade NAMES),
  * these are actual skills within a trade, so a company can scan what a
  * specific applicant can do rather than just which trade they're in.
- * Chosen by the JOB's category, the same enum as identities.category.
+ * Chosen from the JOB's derived expertise tags (see categoryFromTags).
  * English label is what's stored, same convention as CATEGORY_LABELS.
  */
 export const SKILLS_BY_CATEGORY: Record<Category, { en: string; sw: string }[]> = {
@@ -89,6 +89,17 @@ export const SKILLS_BY_CATEGORY: Record<Category, { en: string; sw: string }[]> 
  * either way. */
 export function skillsForCategory(category: Category | null): { en: string; sw: string }[] {
   return SKILLS_BY_CATEGORY[category ?? 'other'] ?? SKILLS_BY_CATEGORY.other
+}
+
+/** Picks the skill list for a job from its derived expertise tags. The
+ * synonym groups reuse the category slugs, so a 'plumbing' tag selects the
+ * plumbing chips; a job matching no group gets the generic list. A
+ * suggestion shortcut only — never a claim that anyone is qualified. */
+export function categoryFromTags(tags: string[] | null | undefined): Category | null {
+  for (const tag of tags ?? []) {
+    if (tag !== 'other' && isValidCategoryValue(tag)) return tag
+  }
+  return null
 }
 
 export function skillEnLabels(category: Category | null): string[] {

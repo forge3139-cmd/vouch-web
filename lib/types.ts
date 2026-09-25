@@ -1,4 +1,3 @@
-import type { Category } from './categories'
 
 export type ConfirmerType = 'client' | 'employer' | 'colleague' | 'teacher' | 'institution'
 export type RecordStatus = 'submitted' | 'confirmed'
@@ -48,10 +47,12 @@ export interface IdentityRow {
   avatar_url: string | null
   language: string | null
   slug: string | null
-  /** Coarse trade bucket powering the public directory's category chips —
-   * separate from `headline`, which stays free text. Null until a worker
-   * (or a future edit-profile flow) sets one. */
-  category: Category | null
+  /** What they typed as their area(s) of professional expertise, verbatim —
+   * always what gets displayed. Set in the app; see vouch-expertise.sql. */
+  expertise: string[]
+  /** Derived search tags (lowercased + synonym groups). Never displayed;
+   * a shared tag means "might be relevant", not "qualified". */
+  expertise_tags: string[]
   created_at?: string
 }
 

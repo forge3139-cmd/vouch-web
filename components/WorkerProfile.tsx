@@ -7,7 +7,6 @@ import WorkRequestFlow from '@/components/WorkRequestFlow'
 import PhotoLightbox from '@/components/PhotoLightbox'
 import Badge from '@/components/ui/Badge'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
-import { CATEGORY_LABELS } from '@/lib/categories'
 import type { ConfirmedWorkItem, WorkerProfileBundle } from '@/lib/workerProfile'
 
 function formatMonthYear(iso: string | null, lang: 'en' | 'sw'): string | null {
@@ -80,7 +79,8 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
   }
 
   const initial = worker.display_name.charAt(0).toUpperCase()
-  const categoryText = worker.category ? CATEGORY_LABELS[worker.category][lang] : null
+  // Exactly what they typed — never a category we picked for them.
+  const expertise = worker.expertise ?? []
   const hasWork = totalConfirmed > 0
   const visibleWork = showAllWork ? confirmedWork : confirmedWork.slice(0, 3)
 
@@ -127,7 +127,11 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
               <h1 className="mt-4 text-2xl font-extrabold text-white sm:text-3xl">{worker.display_name}</h1>
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                {categoryText && <Badge variant="onHero">{categoryText}</Badge>}
+                {expertise.map((entry) => (
+                  <Badge key={entry} variant="onHero">
+                    {entry}
+                  </Badge>
+                ))}
                 {worker.location && (
                   <span className="flex items-center gap-1 text-xs text-white/85">
                     <PinIcon />

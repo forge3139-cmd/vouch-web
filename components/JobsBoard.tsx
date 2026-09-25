@@ -27,10 +27,10 @@ export default function JobsBoard({ jobs }: { jobs: PublicJob[] }) {
 function BoardInner({ jobs }: { jobs: PublicJob[] }) {
   const { lang } = useLanguage()
   const t = useT()
-  const [filter, setFilter] = useState<Category | 'all'>('all')
+  const [filter, setFilter] = useState<Category | 'all'>('all') // a tag shortcut over typed expertise, not a fixed list
 
   const visible = useMemo(
-    () => (filter === 'all' ? jobs : jobs.filter((j) => j.category === filter)),
+    () => (filter === 'all' ? jobs : jobs.filter((j) => j.expertise_tags.includes(filter))),
     [jobs, filter]
   )
 

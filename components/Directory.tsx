@@ -180,7 +180,7 @@ function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }
       <div className="page-container flex-1 py-8 sm:py-10">
         <h2 className="mb-4 text-lg font-extrabold text-ink sm:text-xl">{t('directory', 'browseByTrade')}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-          {CATEGORY_VALUES.map((cat, i) => (
+          {CATEGORY_VALUES.filter((c) => c !== 'other').map((cat, i) => (
             <button
               key={cat}
               type="button"

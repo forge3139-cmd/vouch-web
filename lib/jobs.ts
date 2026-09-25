@@ -1,6 +1,5 @@
 import 'server-only'
 import { getSupabaseServerClient } from './supabase'
-import type { Category } from './categories'
 import type { PublicJob } from './hiring'
 
 export type PublicJobResult = { status: 'not_found' } | { status: 'ok'; job: PublicJob }
@@ -8,7 +7,7 @@ export type PublicJobResult = { status: 'not_found' } | { status: 'ok'; job: Pub
 // Explicit column list, not select('*'): the public page should be
 // structurally unable to leak poster_id or anything added to `jobs` later.
 const PUBLIC_JOB_COLUMNS =
-  'slug, title, company_name, details, location, employment_type, category, salary_min, salary_max, salary_currency, deadline, status'
+  'slug, title, company_name, details, location, employment_type, expertise, expertise_tags, salary_min, salary_max, salary_currency, deadline, status'
 
 export async function loadPublicJob(slug: string): Promise<PublicJobResult> {
   const supabase = getSupabaseServerClient()
@@ -24,7 +23,7 @@ const OPEN_JOBS_LIMIT = 60
  * "already applied" exclusion, since anyone (signed in or not) can load
  * /jobs. Uses the service-role client because the board must work for a
  * signed-out visitor with no session at all. */
-export async function loadOpenJobs(category?: Category | null): Promise<PublicJob[]> {
+export async function loadOpenJobs(tag?: string | null): Promise<PublicJob[]> {
   const supabase = getSupabaseServerClient()
   let query = supabase
     .from('jobs')
@@ -32,7 +31,7 @@ export async function loadOpenJobs(category?: Category | null): Promise<PublicJo
     .eq('status', 'open')
     .order('created_at', { ascending: false })
     .limit(OPEN_JOBS_LIMIT)
-  if (category) query = query.eq('category', category)
+  if (tag) query = query.contains('expertise_tags', [tag])
   const { data, error } = await query.returns<PublicJob[]>()
   if (error) {
     console.error('[loadOpenJobs] query failed', error)
