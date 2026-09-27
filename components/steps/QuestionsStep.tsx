@@ -207,7 +207,6 @@ export default function QuestionsStep({
                 {t('questions', 'photoOptional')}
               </span>
             </legend>
-            <p className="mb-4 text-sm text-muted">{t('questions', 'photoHint')}</p>
             <input
               type="file"
               name="photo"

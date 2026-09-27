@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LanguageProvider, useLanguage, useT } from '@/components/LanguageContext'
-import LangToggle from '@/components/ui/LangToggle'
+import { useLanguage, useT } from '@/components/LanguageContext'
+import { AUTH_CHANGED_EVENT } from '@/lib/auth/events'
 import AuthPanel from '@/components/job/AuthPanel'
 import { signOutAction, type AuthErrorCode } from '@/lib/auth/authActions'
 import { withdrawApplicationAction } from '@/lib/passportActions'
@@ -15,6 +15,7 @@ import ApplicationTimeline from '@/components/ApplicationTimeline'
 import type { MyApplication } from '@/lib/myApplications'
 import type { RecommendedJob } from '@/lib/recommendedJobs'
 import type { AppNotification } from '@/lib/notifications'
+import type { PendingAssessment } from '@/lib/assessments'
 
 export interface ApplicationsViewProps {
   signedIn: boolean
@@ -26,22 +27,21 @@ export interface ApplicationsViewProps {
   /** Worked out from the OLD jobs_last_seen_at, before this visit marks it seen. */
   newJobsCount: number
   notifications: AppNotification[]
+  /** Invited, not yet submitted — drops off this list on its own once sent. */
+  pendingAssessments: PendingAssessment[]
   /** Set right after a failed Google round trip. */
   initialAuthError?: AuthErrorCode | null
 }
 
 export default function ApplicationsView(props: ApplicationsViewProps) {
-  return (
-    <LanguageProvider>
-      <ApplicationsInner {...props} />
-    </LanguageProvider>
-  )
+  return <ApplicationsInner {...props} />
 }
 
 const ACCENTS = ['orange', 'blue', 'green'] as const
 
 function ApplicationsInner({
-  signedIn, items, loadFailed, recommended, hasExpertise, newJobsCount, notifications, initialAuthError = null,
+  signedIn, items, loadFailed, recommended, hasExpertise, newJobsCount, notifications, pendingAssessments,
+  initialAuthError = null,
 }: ApplicationsViewProps) {
   const { lang } = useLanguage()
   const t = useT()
@@ -63,6 +63,10 @@ function ApplicationsInner({
     }
     const applicationId = n.data.application_id
     if (!applicationId) return
+    if (n.type === 'assessment_invited') {
+      router.push(`/applications/assessment/${applicationId}`)
+      return
+    }
     setHighlightId(applicationId)
     // The element already exists in the DOM (it's below on this same page) —
     // no navigation needed, just bring it into view and mark it.
@@ -83,6 +87,7 @@ function ApplicationsInner({
 
   async function handleSignOut() {
     await signOutAction().catch(() => {})
+    window.dispatchEvent(new Event(AUTH_CHANGED_EVENT))
     router.refresh()
   }
 
@@ -90,13 +95,6 @@ function ApplicationsInner({
 
   return (
     <div className="form-shell">
-      <div className="flex items-center justify-between">
-        <Link href="/" className="link-hover tap flex items-center text-sm font-extrabold text-ink">
-          VOUCH
-        </Link>
-        <LangToggle />
-      </div>
-
       {!signedIn ? (
         <div className="mt-6">
           <h1 className="text-2xl font-extrabold text-ink">{t('applied', 'signInTitle')}</h1>
@@ -160,6 +158,7 @@ function ApplicationsInner({
                       accent={ACCENTS[i % 3]}
                       fmt={fmt}
                       highlighted={highlightId === item.id}
+                      pendingAssessment={pendingAssessments.some((p) => p.applicationId === item.id)}
                     />
                   ))}
                 </ul>
@@ -179,11 +178,13 @@ function ApplicationCard({
   accent,
   fmt,
   highlighted = false,
+  pendingAssessment = false,
 }: {
   item: MyApplication
   accent: 'orange' | 'blue' | 'green'
   fmt: (iso: string) => string
   highlighted?: boolean
+  pendingAssessment?: boolean
 }) {
   const t = useT()
   const router = useRouter()
@@ -235,6 +236,16 @@ function ApplicationCard({
         </p>
       ) : (
         <ApplicationTimeline status={item.status} stageReached={item.stageReached} reason={item.notSelectedReason} />
+      )}
+
+      {pendingAssessment && (
+        <Link
+          href={`/applications/assessment/${item.id}`}
+          className="tap mt-3 flex items-center gap-2 rounded-2xl bg-blue-light px-3 py-2.5 text-xs font-bold text-blue"
+        >
+          You’ve been invited to a short assessment — under 15 minutes
+          <span aria-hidden="true">›</span>
+        </Link>
       )}
 
       {accessLabel && (

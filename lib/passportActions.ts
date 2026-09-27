@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from './supabase'
 import { getClientIp, recordAttempt } from './rateLimit'
 import { getSignedInApplicant } from './auth/session'
 import {
-  PASSPORT_FACT_KEYS, type PassportConfirmedWork, type PassportPreview, type Standing,
+  PASSPORT_FACT_KEYS, type PassportConfirmedWork, type PassportPortfolioItem, type PassportPreview, type Standing,
 } from './passport'
 
 export type PreviewResult = { ok: true; preview: PassportPreview } | { ok: false; error: 'signedOut' | 'generic' }
@@ -18,6 +18,8 @@ interface FactsJson {
   }
   standing?: string
   expertise?: string[]
+  capabilities?: string[]
+  portfolio?: PassportPortfolioItem[]
   verified_layers?: string[]
   confirmed_work?: PassportConfirmedWork[]
 }
@@ -62,6 +64,8 @@ export async function previewPassportAction(): Promise<PreviewResult> {
       },
       standing,
       expertise: Array.isArray(facts.expertise) ? (facts.expertise as string[]) : [],
+      capabilities: Array.isArray(facts.capabilities) ? (facts.capabilities as string[]) : [],
+      portfolio: facts.portfolio ?? [],
       verifiedLayers: facts.verified_layers ?? [],
       confirmedWork: facts.confirmed_work ?? [],
     },
@@ -135,6 +139,7 @@ export async function withdrawApplicationAction(applicationId: string): Promise<
       capabilities: '',
       availability: null,
       start_date: null,
+      note: null,
     })
     .eq('id', application.id)
     .eq('applicant_identity_id', applicant.identityId)

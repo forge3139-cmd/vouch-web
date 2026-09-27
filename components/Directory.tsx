@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useTransition } from 'react'
-import { LanguageProvider, useLanguage, useT } from '@/components/LanguageContext'
+import { useLanguage, useT } from '@/components/LanguageContext'
 import { searchDirectoryAction } from '@/lib/directoryActions'
 import type { DirectoryEntry, DirectoryParams, SortOption } from '@/lib/directory'
 import { CATEGORY_LABELS, CATEGORY_VALUES, type Category } from '@/lib/categories'
@@ -18,15 +18,11 @@ const sortLabelKey: Record<SortOption, 'sortJobsConfirmed' | 'sortRepeatClients'
 const quickChipKeys = ['quickChipAc', 'quickChipTailor', 'quickChipCarpenter', 'quickChipElectrician', 'quickChipPhotographer'] as const
 
 export default function Directory({ initialEntries }: { initialEntries: DirectoryEntry[] }) {
-  return (
-    <LanguageProvider>
-      <DirectoryInner initialEntries={initialEntries} />
-    </LanguageProvider>
-  )
+  return <DirectoryInner initialEntries={initialEntries} />
 }
 
 function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }) {
-  const { lang, setLang } = useLanguage()
+  const { lang } = useLanguage()
   const t = useT()
 
   const [query, setQuery] = useState('')
@@ -104,34 +100,7 @@ function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }
   const tints = ['orange', 'blue', 'green'] as const
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="glass-bar sticky top-0 z-20 border-b">
-        <div className="page-container flex items-center justify-between py-3 sm:py-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[image:var(--gradient-hero)] text-sm font-extrabold text-white shadow-[0_8px_18px_-6px_rgba(232,108,42,0.6)]">
-              V
-            </div>
-            <span className="text-lg font-extrabold text-ink">VOUCH</span>
-          </div>
-          <div className="pill overflow-hidden p-0.5 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setLang('en')}
-              className={`tap rounded-pill px-3.5 py-1.5 ${lang === 'en' ? 'bg-ink text-white' : 'text-muted'}`}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => setLang('sw')}
-              className={`tap rounded-pill px-3.5 py-1.5 ${lang === 'sw' ? 'bg-ink text-white' : 'text-muted'}`}
-            >
-              SW
-            </button>
-          </div>
-        </div>
-      </header>
-
+    <div className="flex flex-1 flex-col">
       <div className="page-container pt-5 sm:pt-8">
         <section className="hero-card px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
           <div className="max-w-2xl">

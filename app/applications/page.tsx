@@ -3,6 +3,7 @@ import { getSignedInApplicant } from '@/lib/auth/session'
 import { loadMyApplications } from '@/lib/myApplications'
 import { loadRecommendedJobs } from '@/lib/recommendedJobs'
 import { loadNotifications } from '@/lib/notifications'
+import { getMyPendingAssessmentsAction } from '@/lib/assessmentActions'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +31,7 @@ export default async function ApplicationsPage({
         hasExpertise={false}
         newJobsCount={0}
         notifications={[]}
+        pendingAssessments={[]}
         initialAuthError={initialAuthError}
       />
     )
@@ -38,10 +40,11 @@ export default async function ApplicationsPage({
   const hasExpertise = applicant.expertise.length > 0
   // Only look for possibly-relevant jobs if there's expertise to compare;
   // the function returns nothing without it anyway.
-  const [items, recommended, notifications] = await Promise.all([
+  const [items, recommended, notifications, pendingAssessments] = await Promise.all([
     loadMyApplications(applicant.identityId),
     hasExpertise ? loadRecommendedJobs(RECOMMENDED_FETCH_LIMIT) : Promise.resolve([]),
     loadNotifications(),
+    getMyPendingAssessmentsAction(),
   ])
 
   // Computed from the OLD jobs_last_seen_at, read moments ago as part of
@@ -62,6 +65,7 @@ export default async function ApplicationsPage({
       hasExpertise={hasExpertise}
       newJobsCount={newJobsCount}
       notifications={notifications ?? []}
+      pendingAssessments={pendingAssessments}
     />
   )
 }

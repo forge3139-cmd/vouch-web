@@ -14,6 +14,8 @@ export const PASSPORT_INCLUDES = [
   'evidence',
   'standing',
   'trade',
+  'capabilities',
+  'portfolio',
   'verification',
 ] as const
 
@@ -48,6 +50,13 @@ export interface PassportConfirmedWork {
   hired_again: boolean
 }
 
+export interface PassportPortfolioItem {
+  id: string
+  title: string
+  summary: string | null
+  cover_url: string | null
+}
+
 /** What the consent panel shows — the same facts the company will see. */
 export interface PassportPreview {
   evidence: {
@@ -59,6 +68,10 @@ export interface PassportPreview {
   standing: Standing
   /** What they typed as their expertise, verbatim. Empty if they haven't added any. */
   expertise: string[]
+  /** Skills they list on their profile, verbatim. */
+  capabilities: string[]
+  /** Only shared/public items — never private ones. */
+  portfolio: PassportPortfolioItem[]
   /** Completed verification layers. Empty = "not yet verified". */
   verifiedLayers: string[]
   confirmedWork: PassportConfirmedWork[]

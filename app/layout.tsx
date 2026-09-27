@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import HandoffListener from '@/components/HandoffListener'
+import SiteHeader from '@/components/SiteHeader'
+import { LanguageProvider } from '@/components/LanguageContext'
 import './globals.css'
 
 const inter = Inter({
@@ -25,7 +27,10 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-cream text-ink">
         <HandoffListener />
-        {children}
+        <LanguageProvider>
+          <SiteHeader />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   )

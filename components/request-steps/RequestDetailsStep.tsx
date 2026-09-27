@@ -143,7 +143,6 @@ export default function RequestDetailsStep({
 
         <fieldset>
           <legend className="mb-1 text-sm font-bold text-ink">{t('request', 'descriptionLabel')}</legend>
-          <p className="mb-2 text-xs text-muted">{t('request', 'descriptionHint')}</p>
           <textarea
             value={draft.description}
             onChange={(e) => set('description', e.target.value)}
@@ -161,6 +160,7 @@ export default function RequestDetailsStep({
             value={draft.specifications}
             onChange={(e) => set('specifications', e.target.value)}
             rows={3}
+            placeholder={t('request', 'specificationsPlaceholder')}
             className="field w-full p-4 text-base text-ink"
           />
         </fieldset>
@@ -170,7 +170,6 @@ export default function RequestDetailsStep({
             {t('request', 'photosLabel')}
             <span className="ml-2 text-xs font-medium text-muted">{t('request', 'photosOptional')}</span>
           </legend>
-          <p className="mb-2 text-xs text-muted">{t('request', 'photosHint')}</p>
           <input
             type="file"
             accept="image/*"
@@ -228,9 +227,9 @@ export default function RequestDetailsStep({
           <input
             value={draft.location}
             onChange={(e) => set('location', e.target.value)}
+            placeholder={t('request', 'locationPlaceholder')}
             className="mt-3 field w-full p-4 text-base text-ink"
           />
-          <p className="mt-2 text-xs text-muted">{t('request', 'locationHint')}</p>
         </fieldset>
 
         <fieldset>

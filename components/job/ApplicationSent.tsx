@@ -17,12 +17,9 @@ export default function ApplicationSent({ job }: { job: PublicJob }) {
         {t('job', 'sentBody', { company: job.company_name, title: job.title })}
       </p>
 
-      <div className="glass mt-8 p-card text-left">
-        <p className="text-sm text-ink">{t('job', 'sentSaveHint')}</p>
-        <Link href="/applications" className="btn btn-dark tap mt-4 w-full py-4 text-base">
-          {t('job', 'checkStatus')}
-        </Link>
-      </div>
+      <Link href="/applications" className="btn btn-dark tap mt-8 w-full py-4 text-base">
+        {t('job', 'checkStatus')}
+      </Link>
     </div>
   )
 }

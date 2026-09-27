@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { LanguageProvider, useLanguage, useT } from '@/components/LanguageContext'
-import LangToggle from '@/components/ui/LangToggle'
+import { useLanguage, useT } from '@/components/LanguageContext'
 import { CATEGORY_LABELS, CATEGORY_VALUES, type Category } from '@/lib/categories'
 import { EMPLOYMENT_LABEL_KEYS, formatSalary, type PublicJob } from '@/lib/hiring'
 
@@ -17,11 +16,7 @@ const ACCENTS = ['orange', 'blue', 'green'] as const
  * that stops being true.
  */
 export default function JobsBoard({ jobs }: { jobs: PublicJob[] }) {
-  return (
-    <LanguageProvider>
-      <BoardInner jobs={jobs} />
-    </LanguageProvider>
-  )
+  return <BoardInner jobs={jobs} />
 }
 
 function BoardInner({ jobs }: { jobs: PublicJob[] }) {
@@ -35,17 +30,9 @@ function BoardInner({ jobs }: { jobs: PublicJob[] }) {
   )
 
   return (
-    <div className="flex min-h-dvh flex-col pb-12">
+    <div className="flex flex-1 flex-col pb-12">
       <div className="page-container pt-5 sm:pt-8">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="link-hover tap flex items-center text-sm font-extrabold text-ink">
-            VOUCH
-          </Link>
-          <LangToggle />
-        </div>
-
         <h1 className="mt-6 text-3xl font-extrabold text-ink sm:text-4xl">{t('jobsBoard', 'title')}</h1>
-        <p className="mt-2 text-sm text-muted">{t('jobsBoard', 'subtitle')}</p>
 
         <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
           <button

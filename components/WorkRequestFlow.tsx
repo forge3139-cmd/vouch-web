@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { LanguageProvider } from '@/components/LanguageContext'
 import LanguageStep from '@/components/steps/LanguageStep'
 import RequestIntroStep from '@/components/request-steps/RequestIntroStep'
 import RequestDetailsStep from '@/components/request-steps/RequestDetailsStep'
@@ -40,11 +39,7 @@ export default function WorkRequestFlow({
   bundle: WorkerRequestBundle
   slug: string
 }) {
-  return (
-    <LanguageProvider>
-      <Flow bundle={bundle} slug={slug} />
-    </LanguageProvider>
-  )
+  return <Flow bundle={bundle} slug={slug} />
 }
 
 function Flow({ bundle, slug }: { bundle: WorkerRequestBundle; slug: string }) {

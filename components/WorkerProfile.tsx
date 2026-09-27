@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { LanguageProvider, useLanguage, useT } from '@/components/LanguageContext'
+import { useLanguage, useT } from '@/components/LanguageContext'
 import WorkRequestFlow from '@/components/WorkRequestFlow'
 import PhotoLightbox from '@/components/PhotoLightbox'
 import Badge from '@/components/ui/Badge'
@@ -29,15 +28,11 @@ function formatRelative(iso: string, lang: 'en' | 'sw', t: ReturnType<typeof use
 }
 
 export default function WorkerProfile({ bundle, slug }: { bundle: WorkerProfileBundle; slug: string }) {
-  return (
-    <LanguageProvider>
-      <ProfileInner bundle={bundle} slug={slug} />
-    </LanguageProvider>
-  )
+  return <ProfileInner bundle={bundle} slug={slug} />
 }
 
 function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: string }) {
-  const { lang, setLang } = useLanguage()
+  const { lang } = useLanguage()
   const t = useT()
   const { worker, evidence, totalConfirmed, confirmedWork, activeMonthsCount, activeMonthsWindow, ratedFourPlusCount, photos } = bundle
 
@@ -85,31 +80,9 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
   const visibleWork = showAllWork ? confirmedWork : confirmedWork.slice(0, 3)
 
   return (
-    <div className="flex min-h-dvh flex-col pb-28">
+    <div className="flex flex-1 flex-col pb-28">
       <div className="page-container pt-5 sm:pt-8">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="link-hover tap flex items-center gap-1.5 text-sm font-extrabold text-ink active:opacity-70">
-            <HomeIcon />
-            VOUCH
-          </Link>
-          <div className="pill p-0.5 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setLang('en')}
-              className={`tap rounded-pill px-3.5 py-1.5 ${lang === 'en' ? 'bg-ink text-white' : 'text-muted'}`}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => setLang('sw')}
-              className={`tap rounded-pill px-3.5 py-1.5 ${lang === 'sw' ? 'bg-ink text-white' : 'text-muted'}`}
-            >
-              SW
-            </button>
-          </div>
-        </div>
-        <p className="mt-1 text-right text-xs text-muted">{t('profile', 'publicProfile')}</p>
+        <p className="text-right text-xs text-muted">{t('profile', 'publicProfile')}</p>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-6">
           {/* Left column on desktop: identity, about, evidence, the record */}
@@ -426,15 +399,6 @@ function RepeatIcon() {
       <path d="M4 11V9a4 4 0 0 1 4-4h12" />
       <path d="M7 22l-3-3 3-3" />
       <path d="M20 13v2a4 4 0 0 1-4 4H4" />
-    </svg>
-  )
-}
-
-function HomeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 11l9-7 9 7" />
-      <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
     </svg>
   )
 }

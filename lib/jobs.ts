@@ -7,7 +7,7 @@ export type PublicJobResult = { status: 'not_found' } | { status: 'ok'; job: Pub
 // Explicit column list, not select('*'): the public page should be
 // structurally unable to leak poster_id or anything added to `jobs` later.
 const PUBLIC_JOB_COLUMNS =
-  'slug, title, company_name, details, location, employment_type, expertise, expertise_tags, salary_min, salary_max, salary_currency, deadline, status'
+  'slug, title, company_name, details, location, employment_type, expertise, expertise_tags, skills_needed, salary_min, salary_max, salary_currency, deadline, status'
 
 export async function loadPublicJob(slug: string): Promise<PublicJobResult> {
   const supabase = getSupabaseServerClient()

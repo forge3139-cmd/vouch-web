@@ -1,21 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { LanguageProvider, useLanguage, useT } from '@/components/LanguageContext'
-import LangToggle from '@/components/ui/LangToggle'
+import { useLanguage, useT } from '@/components/LanguageContext'
 import Badge from '@/components/ui/Badge'
 import AuthPanel from '@/components/job/AuthPanel'
-import ApplicationForm, { EMPTY_DRAFT, type ApplicationDraft } from '@/components/job/ApplicationForm'
-import PassportConsent from '@/components/job/PassportConsent'
+import ApplyFromProfile from '@/components/job/ApplyFromProfile'
 import ApplicationSent from '@/components/job/ApplicationSent'
-import type { ApplicationErrorCode } from '@/lib/applicationActions'
 import type { AuthErrorCode } from '@/lib/auth/authActions'
 import type { ApplicantView } from '@/lib/auth/session'
 import { EMPLOYMENT_LABEL_KEYS, formatSalary, isJobClosed, type PublicJob } from '@/lib/hiring'
 import { once, trackFunnel } from '@/lib/funnelClient'
 
-type Step = 'view' | 'auth' | 'apply' | 'consent' | 'sent'
+type Step = 'view' | 'auth' | 'apply' | 'sent'
 
 export default function JobPage({
   job,
@@ -32,14 +28,12 @@ export default function JobPage({
   initialAuthError?: AuthErrorCode | null
 }) {
   return (
-    <LanguageProvider>
-      <JobInner
-        job={job}
-        initialApplicant={initialApplicant}
-        resumeApply={resumeApply}
-        initialAuthError={initialAuthError}
-      />
-    </LanguageProvider>
+    <JobInner
+      job={job}
+      initialApplicant={initialApplicant}
+      resumeApply={resumeApply}
+      initialAuthError={initialAuthError}
+    />
   )
 }
 
@@ -51,23 +45,6 @@ function formatDeadline(iso: string, lang: 'en' | 'sw'): string {
     year: 'numeric',
     timeZone: 'UTC',
   })
-}
-
-// The draft is a convenience copy of what they typed — never anything about
-// the session. sessionStorage (tab-scoped) so a refresh or an email
-// confirmation in the same tab doesn't cost them their answers.
-function draftKey(slug: string): string {
-  return `vouch:apply-draft:${slug}`
-}
-
-function readDraft(slug: string): ApplicationDraft {
-  if (typeof window === 'undefined') return EMPTY_DRAFT
-  try {
-    const raw = window.sessionStorage.getItem(draftKey(slug))
-    return raw ? { ...EMPTY_DRAFT, ...(JSON.parse(raw) as Partial<ApplicationDraft>) } : EMPTY_DRAFT
-  } catch {
-    return EMPTY_DRAFT
-  }
 }
 
 function JobInner({
@@ -91,13 +68,6 @@ function JobInner({
     initialApplicant && resumeApply ? 'apply' : initialAuthError ? 'auth' : 'view'
   )
   const [applicant, setApplicant] = useState<ApplicantView | null>(initialApplicant)
-  const [formNotice, setFormNotice] = useState<ApplicationErrorCode | null>(null)
-  const [draft, setDraft] = useState<ApplicationDraft>(() => {
-    const saved = readDraft(job.slug)
-    return initialApplicant
-      ? { ...saved, name: saved.name || initialApplicant.name, phone: saved.phone || initialApplicant.phone }
-      : saved
-  })
 
   const closed = isJobClosed(job)
   const salary = formatSalary(job)
@@ -107,20 +77,6 @@ function JobInner({
     once(`vouch:viewed:${job.slug}`, () => trackFunnel('job_viewed', job.slug))
   }, [job.slug])
 
-  // Keep the draft across refreshes. Written on change; cleared on submit.
-  useEffect(() => {
-    if (step === 'sent') return
-    try {
-      window.sessionStorage.setItem(draftKey(job.slug), JSON.stringify(draft))
-    } catch {
-      // Storage unavailable — the in-memory draft still survives sign-in.
-    }
-  }, [draft, job.slug, step])
-
-  function patchDraft(patch: Partial<ApplicationDraft>) {
-    setDraft((current) => ({ ...current, ...patch }))
-  }
-
   function handleApply() {
     // Funnel step 2: Apply tapped.
     trackFunnel('apply_tapped', job.slug)
@@ -129,22 +85,7 @@ function JobInner({
 
   function handleSignedIn(next: ApplicantView) {
     setApplicant(next)
-    // Prefill from the account, but never over something they already typed.
-    setDraft((current) => ({
-      ...current,
-      name: current.name || next.name,
-      phone: current.phone || next.phone,
-    }))
     setStep('apply')
-  }
-
-  function handleSent() {
-    try {
-      window.sessionStorage.removeItem(draftKey(job.slug))
-    } catch {
-      // Nothing to clear.
-    }
-    setStep('sent')
   }
 
   if (step === 'auth' && !closed) {
@@ -154,7 +95,6 @@ function JobInner({
           <button type="button" onClick={() => setStep('view')} className="link-hover tap text-sm font-bold text-neutral">
             ‹ {t('job', 'back')}
           </button>
-          <LangToggle />
         </div>
         <div className="mt-6">
           <AuthPanel
@@ -163,7 +103,6 @@ function JobInner({
             onSignedIn={handleSignedIn}
             initialError={initialAuthError}
           />
-          <p className="mt-6 text-center text-xs text-muted">{t('auth', 'keptNote')}</p>
         </div>
       </div>
     )
@@ -171,35 +110,11 @@ function JobInner({
 
   if (step === 'apply' && !closed && applicant) {
     return (
-      <ApplicationForm
+      <ApplyFromProfile
         job={job}
         applicant={applicant}
-        draft={draft}
-        onDraftChange={patchDraft}
         onBack={() => setStep('view')}
-        onContinue={() => {
-          setFormNotice(null)
-          setStep('consent')
-        }}
-        onSignedOut={() => {
-          setApplicant(null)
-          setStep('auth')
-        }}
-        notice={formNotice}
-      />
-    )
-  }
-
-  if (step === 'consent' && !closed && applicant) {
-    return (
-      <PassportConsent
-        job={job}
-        draft={draft}
-        onBack={(error) => {
-          setFormNotice(error ?? null)
-          setStep('apply')
-        }}
-        onSent={handleSent}
+        onSent={() => setStep('sent')}
         onSignedOut={() => {
           setApplicant(null)
           setStep('auth')
@@ -213,15 +128,8 @@ function JobInner({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col pb-12">
+    <div className="flex flex-1 flex-col pb-12">
       <div className="mx-auto w-full max-w-[720px] px-page pt-5 sm:pt-8">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="link-hover tap flex items-center text-sm font-extrabold text-ink">
-            VOUCH
-          </Link>
-          <LangToggle />
-        </div>
-
         <section className="hero-card mt-4 p-5 sm:p-7">
           <Badge variant="onHero" size="sm">
             {closed ? t('job', 'closedTitle') : t('job', 'pill')}
@@ -257,6 +165,16 @@ function JobInner({
         <div className="glass mt-4 p-card">
           <p className="text-[11px] font-bold tracking-wide text-muted">{t('job', 'detailsLabel')}</p>
           <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-ink">{job.details}</p>
+          {job.skills_needed.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[11px] font-bold tracking-wide text-muted">{t('job', 'skillsLabel')}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {job.skills_needed.map((skill) => (
+                  <span key={skill} className="rounded-pill bg-black/5 px-2.5 py-1 text-xs font-bold text-ink">{skill}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {!closed && (

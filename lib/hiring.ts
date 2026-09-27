@@ -23,6 +23,8 @@ export interface PublicJob {
   expertise: string | null
   /** Derived search tags — never displayed. */
   expertise_tags: string[]
+  /** Skills the poster lists for this job, verbatim. */
+  skills_needed: string[]
   salary_min: number | null
   salary_max: number | null
   salary_currency: string
@@ -48,33 +50,6 @@ export const AVAILABILITY_OPTIONS = [
 ] as const
 
 export const AVAILABILITY_VALUES: readonly string[] = AVAILABILITY_OPTIONS.map((o) => o.value)
-
-/** Tanzanian trade qualifications only — deliberately no EPA, NATE or any
- * US licence. Stored as job_applications.qualifications (text[]); a
- * person can hold more than one, except 'none_yet' which the form treats
- * as exclusive of the others. */
-export const QUALIFICATION_OPTIONS = [
-  { value: 'veta_trade_test_3', labelKey: 'qualVetaTradeTest3' },
-  { value: 'veta_trade_test_2', labelKey: 'qualVetaTradeTest2' },
-  { value: 'veta_trade_test_1', labelKey: 'qualVetaTradeTest1' },
-  { value: 'veta_certificate', labelKey: 'qualVetaCertificate' },
-  { value: 'nactvet_diploma', labelKey: 'qualNactvetDiploma' },
-  { value: 'driving_licence', labelKey: 'qualDrivingLicence' },
-  { value: 'none_yet', labelKey: 'qualNoneYet' },
-] as const
-
-export const QUALIFICATION_VALUES: readonly string[] = QUALIFICATION_OPTIONS.map((o) => o.value)
-
-/** Structured, not free text, so the company can scan it at a glance. */
-export const YEARS_EXPERIENCE_OPTIONS = [
-  { value: 'entry_level', labelKey: 'yearsEntryLevel' },
-  { value: 'less_than_1', labelKey: 'yearsLessThan1' },
-  { value: '1_to_3', labelKey: 'years1to3' },
-  { value: '3_to_5', labelKey: 'years3to5' },
-  { value: '5_plus', labelKey: 'years5Plus' },
-] as const
-
-export const YEARS_EXPERIENCE_VALUES: readonly string[] = YEARS_EXPERIENCE_OPTIONS.map((o) => o.value)
 
 export const STATUS_LABEL_KEYS = {
   new: 'statusNew',

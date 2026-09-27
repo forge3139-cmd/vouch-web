@@ -76,7 +76,6 @@ export default function RequestContactStep({
             onChange={(e) => setClientPhone(e.target.value)}
             className="field w-full p-4 text-base text-ink"
           />
-          <p className="mt-2 text-xs text-muted">{t('request', 'phoneHint')}</p>
         </fieldset>
 
         <p className="rounded-card bg-blue-light p-4 text-sm text-ink">{t('request', 'callNote')}</p>

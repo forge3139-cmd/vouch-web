@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useT } from '@/components/LanguageContext'
 import Button from '@/components/ui/Button'
+import { AUTH_CHANGED_EVENT } from '@/lib/auth/events'
 import { signInAction, signInWithGoogleAction, signUpAction, type AuthErrorCode } from '@/lib/auth/authActions'
 import type { ApplicantView } from '@/lib/auth/session'
 import { getVisitorId } from '@/lib/funnelClient'
@@ -102,6 +103,7 @@ export default function AuthPanel({
     try {
       const result = await (mode === 'create' ? signUpAction(formData) : signInAction(formData))
       if (result.ok) {
+        window.dispatchEvent(new Event(AUTH_CHANGED_EVENT))
         onSignedIn(result.applicant)
         return
       }
@@ -180,9 +182,9 @@ export default function AuthPanel({
             autoComplete="username"
             inputMode="email"
             autoCapitalize="none"
+            placeholder={t('auth', 'contactPlaceholder')}
             className="field w-full p-4 text-base"
           />
-          {mode === 'create' && <p className="mt-2 text-xs text-muted">{t('auth', 'contactHint')}</p>}
         </fieldset>
 
         <fieldset>

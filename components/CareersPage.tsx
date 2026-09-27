@@ -1,8 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { LanguageProvider, useT } from '@/components/LanguageContext'
-import LangToggle from '@/components/ui/LangToggle'
+import { useT } from '@/components/LanguageContext'
 import { EMPLOYMENT_LABEL_KEYS, formatSalary, type PublicJob } from '@/lib/hiring'
 import type { CareersPoster } from '@/lib/jobs'
 
@@ -15,11 +14,7 @@ const ACCENTS = ['orange', 'blue', 'green'] as const
  * normal state here, not an error.
  */
 export default function CareersPage({ poster, jobs }: { poster: CareersPoster; jobs: PublicJob[] }) {
-  return (
-    <LanguageProvider>
-      <CareersInner poster={poster} jobs={jobs} />
-    </LanguageProvider>
-  )
+  return <CareersInner poster={poster} jobs={jobs} />
 }
 
 function CareersInner({ poster, jobs }: { poster: CareersPoster; jobs: PublicJob[] }) {
@@ -27,15 +22,8 @@ function CareersInner({ poster, jobs }: { poster: CareersPoster; jobs: PublicJob
   const initial = poster.displayName.charAt(0).toUpperCase()
 
   return (
-    <div className="flex min-h-dvh flex-col pb-12">
+    <div className="flex flex-1 flex-col pb-12">
       <div className="page-container pt-5 sm:pt-8">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="link-hover tap flex items-center text-sm font-extrabold text-ink">
-            VOUCH
-          </Link>
-          <LangToggle />
-        </div>
-
         <div className="mt-6 flex items-center gap-4">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-card-border text-2xl font-bold text-ink">
             {poster.avatarUrl ? (
@@ -49,7 +37,6 @@ function CareersInner({ poster, jobs }: { poster: CareersPoster; jobs: PublicJob
             <h1 className="text-2xl font-extrabold text-ink sm:text-3xl">
               {t('careers', 'heading', { name: poster.displayName })}
             </h1>
-            <p className="mt-1 text-sm text-muted">{t('careers', 'subtitle')}</p>
           </div>
         </div>
 

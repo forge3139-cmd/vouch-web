@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LanguageProvider, useT } from '@/components/LanguageContext'
+import { useT } from '@/components/LanguageContext'
 import LanguageStep from '@/components/steps/LanguageStep'
 import AskStep from '@/components/steps/AskStep'
 import QuestionsStep from '@/components/steps/QuestionsStep'
@@ -12,11 +12,7 @@ import type { ConfirmationBundle } from '@/lib/types'
 type Step = 'language' | 'ask' | 'questions' | 'success' | 'decline' | 'declined'
 
 export default function ConfirmationFlow({ bundle }: { bundle: ConfirmationBundle }) {
-  return (
-    <LanguageProvider>
-      <Flow bundle={bundle} />
-    </LanguageProvider>
-  )
+  return <Flow bundle={bundle} />
 }
 
 function Flow({ bundle }: { bundle: ConfirmationBundle }) {
