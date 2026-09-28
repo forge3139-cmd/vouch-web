@@ -8,17 +8,9 @@ import {
   getAssessmentForApplicationAction, signAssessmentMediaAction, submitAssessmentAction, uploadAssessmentMediaAction,
   type GetAssessmentResult,
 } from '@/lib/assessmentActions'
-import type { AssessmentAnswer, AssessmentNoteStatus } from '@/lib/assessments'
+import type { AssessmentAnswer } from '@/lib/assessments'
 
 const SUGGESTED_SECONDS = 15 * 60
-
-// What the AI is allowed to say about a submission — never a score, never
-// "correct". See organize-assessment-submission.
-const FINDING_LABEL: Record<AssessmentNoteStatus, string> = {
-  evidence_attached: 'Evidence attached',
-  nothing_submitted: 'Nothing submitted',
-  needs_review: 'Flagged for human review',
-}
 
 type AnswerType = 'voice' | 'photo' | 'text'
 type UploadStatus = 'idle' | 'uploading' | 'uploaded' | 'failed'
@@ -373,20 +365,6 @@ export default function AssessmentView({
       </div>
 
       {error && <p role="alert" className="mt-4 text-sm font-semibold text-red-600">{error}</p>}
-
-      {/* Two separate blocks, on purpose — findings are what the AI
-       * organised (what was/wasn't submitted, never a score); feedback is
-       * the company's own words. Never shown as one paragraph. */}
-      {submitted && !!view.assessmentFindings?.length && (
-        <div className="glass mt-6 p-card">
-          <p className="text-[11px] font-bold tracking-wide text-muted">ASSESSMENT FINDINGS</p>
-          {view.assessmentFindings.map((f, i) => (
-            <p key={i} className="mt-2 text-sm leading-relaxed text-ink">
-              Question {i + 1}: {FINDING_LABEL[f.status] ?? f.status}
-            </p>
-          ))}
-        </div>
-      )}
 
       {submitted && !!view.companyFeedback && (
         <div className="glass mt-4 p-card">

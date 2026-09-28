@@ -3,7 +3,7 @@
 import { createAuthClient } from './auth/client'
 import { getSignedInApplicant } from './auth/session'
 import { validateImageFile } from './fileValidation'
-import type { AssessmentAnswer, AssessmentNote, AssessmentView, PendingAssessment } from './assessments'
+import type { AssessmentAnswer, AssessmentView, PendingAssessment } from './assessments'
 
 /**
  * The candidate's side of an assessment scenario. Nothing here scores
@@ -27,7 +27,7 @@ export async function getAssessmentForApplicationAction(applicationId: string): 
   }
   const result = data as {
     ok: boolean; error?: string; situation?: string; questions?: string[]; submitted?: boolean; answers?: AssessmentAnswer[] | null
-    assessment_findings?: AssessmentNote[] | null; company_feedback?: string | null
+    company_feedback?: string | null
   }
   if (!result.ok || !result.situation || !result.questions) {
     return { ok: false, error: result.error === 'not_invited' ? 'notInvited' : 'generic' }
@@ -39,7 +39,6 @@ export async function getAssessmentForApplicationAction(applicationId: string): 
       questions: result.questions,
       submitted: !!result.submitted,
       answers: result.answers ?? null,
-      assessmentFindings: result.assessment_findings ?? null,
       companyFeedback: result.company_feedback ?? null,
     },
   }

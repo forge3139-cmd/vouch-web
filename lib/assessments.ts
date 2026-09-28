@@ -13,23 +13,14 @@ export type AssessmentAnswer =
   | { type: 'voice'; audio_url: string; duration_seconds: number; transcript: string | null }
   | { type: 'photo'; photo_url: string; caption: string | null }
 
-/** The AI's per-question note — never a score, never "requirement met".
- * See vouch-assessment-review.sql and the organize-assessment-submission
- * Edge Function. */
-export type AssessmentNoteStatus = 'evidence_attached' | 'nothing_submitted' | 'needs_review'
-export interface AssessmentNote {
-  status: AssessmentNoteStatus
-  note: string | null
-}
-
 export interface AssessmentView {
   situation: string
   questions: string[]
   submitted: boolean
   answers: AssessmentAnswer[] | null
-  /** The candidate's report, kept in two separate keys on purpose — never
-   * merge these into one string when rendering. */
-  assessmentFindings: AssessmentNote[] | null
+  /** In the company's own words. No AI-generated summary sits alongside
+   * this any more — what was or wasn't submitted is plain to see in
+   * `answers` itself. */
   companyFeedback: string | null
 }
 
