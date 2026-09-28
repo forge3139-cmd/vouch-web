@@ -65,7 +65,7 @@ export async function submitAssessmentAction(applicationId: string, answers: Ass
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024
 
-export type UploadMediaResult = { ok: true; url: string } | { ok: false; error: 'invalid' | 'generic' }
+export type UploadMediaResult = { ok: true; path: string } | { ok: false; error: 'invalid' | 'generic' }
 
 /**
  * A voice or photo answer, uploaded as the signed-in applicant so Storage
@@ -107,8 +107,32 @@ export async function uploadAssessmentMediaAction(formData: FormData): Promise<U
     return { ok: false, error: 'generic' }
   }
 
-  const { data: publicUrl } = supabase.storage.from('assessment-media').getPublicUrl(uploaded.path)
-  return { ok: true, url: publicUrl.publicUrl }
+  return { ok: true, path: uploaded.path }
+}
+
+export type SignMediaResult = { ok: true; url: string } | { ok: false }
+
+/**
+ * assessment-media is a private bucket — audio_url/photo_url on a
+ * submitted answer are storage paths, not usable URLs. This mints a
+ * short-lived signed one, gated server-side (sign-assessment-media) by the
+ * same authorization as the rest of an assessment: the candidate can
+ * always sign their own answer.
+ */
+export async function signAssessmentMediaAction(applicationId: string, path: string): Promise<SignMediaResult> {
+  const applicant = await getSignedInApplicant()
+  if (!applicant) return { ok: false }
+
+  const supabase = await createAuthClient()
+  const { data, error } = await supabase.functions.invoke('sign-assessment-media', {
+    body: { applicationId, path },
+  })
+  if (error) {
+    console.error('[signAssessmentMediaAction] function invoke failed', error)
+    return { ok: false }
+  }
+  const result = data as { ok: boolean; url?: string }
+  return result.ok && result.url ? { ok: true, url: result.url } : { ok: false }
 }
 
 export async function getMyPendingAssessmentsAction(): Promise<PendingAssessment[]> {

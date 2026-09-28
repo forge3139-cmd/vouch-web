@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import { compressImage } from '@/lib/compressImage'
 import {
-  getAssessmentForApplicationAction, submitAssessmentAction, uploadAssessmentMediaAction,
+  getAssessmentForApplicationAction, signAssessmentMediaAction, submitAssessmentAction, uploadAssessmentMediaAction,
   type GetAssessmentResult,
 } from '@/lib/assessmentActions'
 import type { AssessmentAnswer, AssessmentNoteStatus } from '@/lib/assessments'
@@ -28,13 +28,19 @@ interface DraftAnswer {
   text: string
   blob: Blob | null
   previewUrl: string | null
-  uploadedUrl: string | null
+  /** The storage path — assessment-media is a private bucket, so this
+   * alone can't be used as a src. Only used when actually submitting. */
+  uploadedPath: string | null
+  /** A short-lived signed URL, resolved lazily for a reloaded submitted
+   * answer that has no local blob/previewUrl to show instead. */
+  signedPreviewUrl: string | null
   durationSeconds: number
   uploadStatus: UploadStatus
 }
 
 const EMPTY_DRAFT: DraftAnswer = {
-  type: null, text: '', blob: null, previewUrl: null, uploadedUrl: null, durationSeconds: 0, uploadStatus: 'idle',
+  type: null, text: '', blob: null, previewUrl: null, uploadedPath: null, signedPreviewUrl: null,
+  durationSeconds: 0, uploadStatus: 'idle',
 }
 
 function formatDuration(totalSeconds: number): string {
@@ -118,13 +124,29 @@ export default function AssessmentView({
 
   function answerToDraft(a: AssessmentAnswer): DraftAnswer {
     if (a.type === 'text') return { ...EMPTY_DRAFT, type: 'text', text: a.text }
-    if (a.type === 'voice') return { ...EMPTY_DRAFT, type: 'voice', uploadedUrl: a.audio_url, durationSeconds: a.duration_seconds, uploadStatus: 'uploaded' }
-    return { ...EMPTY_DRAFT, type: 'photo', uploadedUrl: a.photo_url, uploadStatus: 'uploaded' }
+    if (a.type === 'voice') return { ...EMPTY_DRAFT, type: 'voice', uploadedPath: a.audio_url, durationSeconds: a.duration_seconds, uploadStatus: 'uploaded' }
+    return { ...EMPTY_DRAFT, type: 'photo', uploadedPath: a.photo_url, uploadStatus: 'uploaded' }
   }
 
   function patchDraft(index: number, patch: Partial<DraftAnswer>) {
     setDrafts((current) => current.map((d, i) => (i === index ? { ...d, ...patch } : d)))
   }
+
+  // Reloaded submitted answers have a path but no local blob to preview —
+  // resolve a signed URL for those once, on mount.
+  useEffect(() => {
+    if (!initial.ok || !initial.view.submitted || !initial.view.answers) return
+    initial.view.answers.forEach((a, i) => {
+      if ((a.type === 'voice' || a.type === 'photo') && (a.type === 'voice' ? a.audio_url : a.photo_url)) {
+        const path = a.type === 'voice' ? a.audio_url : a.photo_url
+        signAssessmentMediaAction(applicationId, path).then((res) => {
+          if (res.ok) patchDraft(i, { signedPreviewUrl: res.url })
+        })
+      }
+    })
+    // Only ever needed once, for the initial server-rendered submission.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function chooseType(index: number, type: AnswerType) {
     if (drafts[index].type === type) return
@@ -181,7 +203,7 @@ export default function AssessmentView({
     formData.set('file', blob, filename)
     uploadAssessmentMediaAction(formData)
       .then((res) => {
-        if (res.ok) patchDraft(index, { uploadedUrl: res.url, uploadStatus: 'uploaded' })
+        if (res.ok) patchDraft(index, { uploadedPath: res.path, uploadStatus: 'uploaded' })
         else patchDraft(index, { uploadStatus: 'failed' })
       })
       .catch((e) => {
@@ -205,8 +227,8 @@ export default function AssessmentView({
     setError(null)
     const answers: AssessmentAnswer[] = drafts.map((d) => {
       if (d.type === 'text') return { type: 'text', text: d.text.trim() }
-      if (d.type === 'voice') return { type: 'voice', audio_url: d.uploadedUrl!, duration_seconds: d.durationSeconds, transcript: null }
-      return { type: 'photo', photo_url: d.uploadedUrl!, caption: null }
+      if (d.type === 'voice') return { type: 'voice', audio_url: d.uploadedPath!, duration_seconds: d.durationSeconds, transcript: null }
+      return { type: 'photo', photo_url: d.uploadedPath!, caption: null }
     })
     const submitResult = await submitAssessmentAction(applicationId, answers)
     setSubmitting(false)
@@ -307,7 +329,9 @@ export default function AssessmentView({
                     </button>
                   ) : (
                     <>
-                      {draft.previewUrl && <audio controls src={draft.uploadedUrl ?? draft.previewUrl} className="mb-2 w-full" />}
+                      {(draft.previewUrl || draft.signedPreviewUrl) && (
+                        <audio controls src={draft.previewUrl ?? draft.signedPreviewUrl ?? undefined} className="mb-2 w-full" />
+                      )}
                       <UploadRow
                         label={`Voice answer · ${formatDuration(draft.durationSeconds)}`}
                         status={draft.uploadStatus}
@@ -321,7 +345,7 @@ export default function AssessmentView({
 
               {draft.type === 'photo' && (
                 <div>
-                  {!draft.blob && !draft.uploadedUrl ? (
+                  {!draft.blob && !draft.uploadedPath ? (
                     <input
                       type="file"
                       accept="image/*"
@@ -331,8 +355,8 @@ export default function AssessmentView({
                     />
                   ) : (
                     <>
-                      {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview or Supabase Storage URL */}
-                      <img src={draft.uploadedUrl ?? draft.previewUrl ?? ''} alt="" className="mb-2 h-40 w-full rounded-xl object-cover" />
+                      {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview or a signed Supabase Storage URL */}
+                      <img src={draft.previewUrl ?? draft.signedPreviewUrl ?? ''} alt="" className="mb-2 h-40 w-full rounded-xl object-cover" />
                       <UploadRow
                         label="Photo answer"
                         status={draft.uploadStatus}
