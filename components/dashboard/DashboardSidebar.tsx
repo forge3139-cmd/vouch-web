@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useT } from '@/components/LanguageContext'
@@ -14,9 +13,7 @@ const LINKS: { key: NavKey; href: string; matches: (path: string) => boolean; ic
     key: 'findPeople',
     href: '/',
     matches: (p) => p === '/' || p.startsWith('/w/'),
-    icon: (
-      <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-    ),
+    icon: <path d="m3 11 9-8 9 8M5 10v10h5v-6h4v6h5V10" />,
   },
   {
     key: 'jobs',
@@ -38,11 +35,16 @@ const LINKS: { key: NavKey; href: string; matches: (path: string) => boolean; ic
   },
 ]
 
+/**
+ * A narrow icon rail rather than a labelled list — every icon still has a
+ * real `aria-label` plus a visible hover/focus tooltip (CSS only, no JS),
+ * so dropping the text labels on screen never drops them for anyone
+ * using a keyboard or a screen reader.
+ */
 export default function DashboardSidebar({ slug }: { slug: string | null }) {
   const pathname = usePathname()
   const router = useRouter()
   const t = useT()
-  const [menuOpen, setMenuOpen] = useState(false)
 
   async function handleSignOut() {
     await signOutAction().catch(() => {})
@@ -52,115 +54,85 @@ export default function DashboardSidebar({ slug }: { slug: string | null }) {
   }
 
   return (
-    <>
-      <div className="flex items-center justify-between gap-3 border-b border-card-border bg-cream/95 px-4 py-3 lg:hidden">
-        <Link href="/" className="tap flex items-center gap-2" aria-label={t('nav', 'home')}>
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[image:var(--gradient-hero)] text-sm font-extrabold text-white">V</span>
-          <span className="text-base font-extrabold text-ink">VOUCH</span>
-        </Link>
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-expanded={menuOpen}
-          aria-controls="dashboard-nav"
-          aria-label={menuOpen ? t('nav', 'menuClose') : t('nav', 'menuOpen')}
-          className="tap flex h-9 w-9 items-center justify-center rounded-full"
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-            {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-          </svg>
-        </button>
-      </div>
+    <aside className="flex w-[68px] shrink-0 flex-col items-center gap-2 bg-[linear-gradient(180deg,var(--dash-coral),var(--dash-orange))] py-5">
+      <RailLink href="/" label={t('nav', 'home')} active={false} tone="brand">
+        <path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5ZM9 12l2 2 4-4" />
+      </RailLink>
 
-      <aside
-        id="dashboard-nav"
-        className={`${menuOpen ? 'flex' : 'hidden'} w-full flex-col gap-7 bg-dash-ink px-4 py-7 text-white lg:flex lg:w-[260px] lg:shrink-0`}
-      >
-        <Link href="/" className="tap hidden items-center gap-2.5 px-2 lg:flex" aria-label={t('nav', 'home')}>
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[image:var(--gradient-hero)] text-sm font-extrabold text-white">V</span>
-          <span className="text-lg font-extrabold tracking-tight">VOUCH</span>
-        </Link>
+      <nav aria-label="Main" className="mt-3 flex flex-col items-center gap-2">
+        {LINKS.map((link) => (
+          <RailLink key={link.key} href={link.href} label={t('nav', link.key)} active={link.matches(pathname)}>
+            {link.icon}
+          </RailLink>
+        ))}
+      </nav>
 
-        <nav aria-label="Main" className="flex flex-col gap-1">
-          <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-white/40">{t('dashboard', 'dashboard')}</p>
-          {LINKS.map((link) => {
-            const active = link.matches(pathname)
-            return (
-              <Link
-                key={link.key}
-                href={link.href}
-                aria-current={active ? 'page' : undefined}
-                className={`tap flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
-                  active ? 'border-l-[3px] border-dash-teal bg-white/10 font-bold text-white' : 'font-semibold text-white/75 hover:text-white'
-                }`}
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  {link.icon}
-                </svg>
-                {t('nav', link.key)}
-              </Link>
-            )
-          })}
-        </nav>
-
-        <div className="flex flex-col gap-1">
-          <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-white/40">{t('nav', 'account')}</p>
-          {slug && (
-            <Link href={`/w/${slug}`} className="tap flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-white/75 hover:text-white">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
-              </svg>
-              {t('nav', 'myProfile')}
-            </Link>
-          )}
+      <div className="mt-auto flex flex-col items-center gap-2">
+        {slug && (
+          <RailLink href={`/w/${slug}`} label={t('nav', 'myProfile')} active={pathname === `/w/${slug}`}>
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+          </RailLink>
+        )}
+        <div className="group relative">
           <button
             type="button"
             onClick={handleSignOut}
-            className="tap flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-white/75 hover:text-white"
+            aria-label={t('nav', 'signOut')}
+            className="tap flex h-10 w-10 items-center justify-center rounded-2xl text-white/85 hover:bg-white/15 hover:text-white"
           >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <path d="m16 17 5-5-5-5" />
               <path d="M21 12H9" />
             </svg>
-            {t('nav', 'signOut')}
           </button>
+          <RailTooltip label={t('nav', 'signOut')} />
         </div>
-
-        {slug && <ShareProfileCard slug={slug} />}
-      </aside>
-    </>
+      </div>
+    </aside>
   )
 }
 
-function ShareProfileCard({ slug }: { slug: string }) {
-  const t = useT()
-  const [copied, setCopied] = useState(false)
-
-  async function handleCopy() {
-    const url = `${window.location.origin}/w/${slug}`
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Clipboard permission denied or unavailable — the link is still
-      // right there on the profile page itself, nothing else to do here.
-    }
-  }
-
+function RailLink({
+  href, label, active, tone = 'default', children,
+}: {
+  href: string
+  label: string
+  active: boolean
+  tone?: 'default' | 'brand'
+  children: React.ReactNode
+}) {
   return (
-    <div className="mt-auto rounded-2xl bg-gradient-to-br from-dash-teal to-dash-olive p-4 text-[#10231e]">
-      <p className="text-[13px] font-extrabold">{t('dashboard', 'shareProfile')}</p>
-      <p className="mt-1 text-xs leading-relaxed text-[#10231e]/75">{t('dashboard', 'shareProfileBody')}</p>
-      <button
-        type="button"
-        onClick={handleCopy}
-        className="tap mt-3 w-full rounded-full bg-[#10231e] py-2 text-xs font-bold text-white"
+    <div className="group relative">
+      <Link
+        href={href}
+        aria-label={label}
+        aria-current={active ? 'page' : undefined}
+        className={`tap flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${
+          active
+            ? 'bg-white text-dash-coral'
+            : tone === 'brand'
+              ? 'bg-white/95 text-dash-coral'
+              : 'text-white/85 hover:bg-white/15 hover:text-white'
+        }`}
       >
-        {copied ? t('dashboard', 'linkCopied') : t('dashboard', 'copyLink')}
-      </button>
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {children}
+        </svg>
+      </Link>
+      <RailTooltip label={label} />
     </div>
+  )
+}
+
+function RailTooltip({ label }: { label: string }) {
+  return (
+    <span
+      role="presentation"
+      className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-30 -translate-y-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-100 group-hover:opacity-100 group-focus-within:opacity-100"
+    >
+      {label}
+    </span>
   )
 }

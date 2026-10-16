@@ -66,6 +66,7 @@ export default async function ApplicationsPage({
     <ApplicationsView
       signedIn
       name={applicant.name}
+      slug={applicant.slug}
       items={liveItems}
       loadFailed={items === null}
       recommended={recommended ? recommended.slice(0, RECOMMENDED_DISPLAY_LIMIT) : null}

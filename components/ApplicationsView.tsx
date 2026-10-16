@@ -14,8 +14,11 @@ import ApplicationTimeline from '@/components/ApplicationTimeline'
 import DashboardTopbar from '@/components/dashboard/DashboardTopbar'
 import StatTiles from '@/components/dashboard/StatTiles'
 import WeeklyActivityChart from '@/components/dashboard/WeeklyActivityChart'
+import QuickActionsRow from '@/components/dashboard/QuickActionsRow'
+import ActiveApplicationsStrip from '@/components/dashboard/ActiveApplicationsStrip'
 import UpcomingCard from '@/components/dashboard/UpcomingCard'
 import RecentConfirmationsCard from '@/components/dashboard/RecentConfirmationsCard'
+import ShareProfileCard from '@/components/dashboard/ShareProfileCard'
 import type { MyApplication } from '@/lib/myApplications'
 import type { RecommendedJob } from '@/lib/recommendedJobs'
 import type { AppNotification } from '@/lib/notifications'
@@ -39,6 +42,7 @@ export interface ApplicationsViewProps {
   initialAuthError?: AuthErrorCode | null
   /** Everything below is signed-in only — the dashboard shell. */
   name?: string
+  slug?: string | null
   evidence?: PassportPreview['evidence'] | null
   confirmedWork?: PassportConfirmedWork[]
   weeklyActivity?: WeeklyActivity
@@ -52,7 +56,7 @@ const ACCENTS = ['orange', 'blue', 'green'] as const
 
 function ApplicationsInner({
   signedIn, items, loadFailed, recommended, hasExpertise, newJobsCount, notifications, pendingAssessments,
-  initialAuthError = null, name = '', evidence = null, confirmedWork = [], weeklyActivity,
+  initialAuthError = null, name = '', slug = null, evidence = null, confirmedWork = [], weeklyActivity,
 }: ApplicationsViewProps) {
   const { lang } = useLanguage()
   const t = useT()
@@ -98,6 +102,7 @@ function ApplicationsInner({
 
   const activeAccess = items.filter((i) => i.access.state === 'active')
   const interviewing = items.filter((i) => !i.withdrawn && i.status === 'interviewing')
+  const inProgress = items.filter((i) => !i.withdrawn && i.status !== 'hired' && i.status !== 'not_selected')
   const unreadNotifs = notifs.filter((n) => !n.read_at)
 
   if (!signedIn) {
@@ -146,10 +151,13 @@ function ApplicationsInner({
                   dateLocale={dateLocale}
                 />
               )}
+              <QuickActionsRow />
+              <ActiveApplicationsStrip items={inProgress} />
             </div>
             <div className="flex min-w-0 flex-1 basis-[280px] flex-col gap-5">
               <UpcomingCard pendingAssessments={pendingAssessments} interviewing={interviewing} />
               <RecentConfirmationsCard confirmedWork={confirmedWork} fmt={fmt} />
+              {slug && <ShareProfileCard slug={slug} />}
             </div>
           </div>
 
