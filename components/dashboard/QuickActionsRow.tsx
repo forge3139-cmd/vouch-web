@@ -8,18 +8,18 @@ export default function QuickActionsRow() {
   const t = useT()
 
   return (
-    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Link href="/jobs" className="tap glass flex items-center justify-between gap-3 p-5">
-        <span>
-          <span className="block text-[15px] font-extrabold text-ink">{t('dashboard', 'actionFindJobs')}</span>
+    <div className="flex flex-col gap-4">
+      <Link href="/jobs" className="tap glass flex items-center justify-between gap-3 p-4">
+        <span className="min-w-0">
+          <span className="block truncate text-[14px] font-extrabold text-ink">{t('dashboard', 'actionFindJobs')}</span>
           <span className="mt-0.5 block text-xs font-medium text-muted">{t('dashboard', 'actionFindJobsBody')}</span>
         </span>
         <ChevronCircle tone="red" />
       </Link>
 
-      <Link href="/request" className="tap glass flex items-center justify-between gap-3 p-5">
-        <span>
-          <span className="block text-[15px] font-extrabold text-ink">{t('dashboard', 'actionPostRequest')}</span>
+      <Link href="/request" className="tap glass flex items-center justify-between gap-3 p-4">
+        <span className="min-w-0">
+          <span className="block truncate text-[14px] font-extrabold text-ink">{t('dashboard', 'actionPostRequest')}</span>
           <span className="mt-0.5 block text-xs font-medium text-muted">{t('dashboard', 'actionPostRequestBody')}</span>
         </span>
         <ChevronCircle tone="navy" />

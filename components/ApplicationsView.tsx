@@ -141,22 +141,41 @@ function ApplicationsInner({
             applicationsSent={items.filter((i) => !i.withdrawn).length}
           />
 
-          <div className="mt-5 flex flex-wrap gap-5">
-            <div className="min-w-0 flex-[2] basis-[380px]">
-              {weeklyActivity && (
-                <WeeklyActivityChart
-                  days={weeklyActivity.days}
-                  total={weeklyActivity.total}
-                  previousTotal={weeklyActivity.previousTotal}
-                  dateLocale={dateLocale}
-                />
-              )}
-              <QuickActionsRow />
-              <ActiveApplicationsStrip items={inProgress} />
+          <div className="mt-5 flex flex-wrap items-start gap-5">
+            {/* Main column: a narrow stack beside the week's chart, then
+             * full-width rows below — same rhythm as a typical dashboard
+             * (small actions beside the headline chart, lists spanning
+             * full width underneath), just built from VOUCH's own glass
+             * cards instead of solid colour panels. */}
+            <div className="min-w-0 flex-[2] basis-[420px]">
+              <div className="flex flex-wrap items-start gap-5">
+                <div className="flex min-w-0 flex-1 basis-[200px] flex-col gap-4">
+                  <QuickActionsRow />
+                </div>
+                <div className="min-w-0 flex-[2] basis-[320px]">
+                  {weeklyActivity && (
+                    <WeeklyActivityChart
+                      days={weeklyActivity.days}
+                      total={weeklyActivity.total}
+                      previousTotal={weeklyActivity.previousTotal}
+                      dateLocale={dateLocale}
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <ActiveApplicationsStrip items={inProgress} />
+              </div>
+
+              <div className="mt-5">
+                <RecentConfirmationsCard confirmedWork={confirmedWork} fmt={fmt} />
+              </div>
             </div>
-            <div className="flex min-w-0 flex-1 basis-[280px] flex-col gap-5">
+
+            {/* Right column: a narrower, persistent sidebar of its own. */}
+            <div className="flex min-w-0 flex-1 basis-[260px] flex-col gap-5">
               <UpcomingCard pendingAssessments={pendingAssessments} interviewing={interviewing} />
-              <RecentConfirmationsCard confirmedWork={confirmedWork} fmt={fmt} />
               {slug && <ShareProfileCard slug={slug} />}
             </div>
           </div>
