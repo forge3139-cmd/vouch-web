@@ -13,6 +13,13 @@ import { getHeaderSessionAction, type HeaderSession } from '@/lib/auth/headerSes
 // message; site navigation there would only distract.
 const HIDDEN_ON = ['/c/']
 
+// The signed-in applications area has its own sidebar nav (DashboardSidebar)
+// once someone's signed in — this header would just be a second, redundant
+// one stacked above it. Signed OUT, there's no sidebar yet, so this stays:
+// without it a visitor who lands on /applications with no session has no
+// way to get anywhere else on the site.
+const HIDDEN_WHEN_SIGNED_IN_ON = ['/applications']
+
 type NavKey = 'findPeople' | 'jobs' | 'requests' | 'myApplications'
 
 const LINKS: { key: NavKey; href: string; matches: (path: string) => boolean }[] = [
@@ -89,9 +96,10 @@ export default function SiteHeader() {
     router.refresh()
   }
 
-  if (HIDDEN_ON.some((prefix) => pathname.startsWith(prefix))) return null
-
   const signedIn = session?.signedIn === true
+
+  if (HIDDEN_ON.some((prefix) => pathname.startsWith(prefix))) return null
+  if (signedIn && HIDDEN_WHEN_SIGNED_IN_ON.some((prefix) => pathname.startsWith(prefix))) return null
   const links = LINKS.filter((l) => l.key !== 'myApplications' || signedIn)
 
   return (

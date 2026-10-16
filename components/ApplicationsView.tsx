@@ -4,18 +4,24 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLanguage, useT } from '@/components/LanguageContext'
-import { AUTH_CHANGED_EVENT } from '@/lib/auth/events'
 import AuthPanel from '@/components/job/AuthPanel'
-import { signOutAction, type AuthErrorCode } from '@/lib/auth/authActions'
+import type { AuthErrorCode } from '@/lib/auth/authActions'
 import { withdrawApplicationAction } from '@/lib/passportActions'
 import { markJobsSeenAction } from '@/lib/jobAlertsActions'
 import { markNotificationReadAction } from '@/lib/notificationActions'
 import { EMPLOYMENT_LABEL_KEYS } from '@/lib/hiring'
 import ApplicationTimeline from '@/components/ApplicationTimeline'
+import DashboardTopbar from '@/components/dashboard/DashboardTopbar'
+import StatTiles from '@/components/dashboard/StatTiles'
+import WeeklyActivityChart from '@/components/dashboard/WeeklyActivityChart'
+import UpcomingCard from '@/components/dashboard/UpcomingCard'
+import RecentConfirmationsCard from '@/components/dashboard/RecentConfirmationsCard'
 import type { MyApplication } from '@/lib/myApplications'
 import type { RecommendedJob } from '@/lib/recommendedJobs'
 import type { AppNotification } from '@/lib/notifications'
 import type { PendingAssessment } from '@/lib/assessments'
+import type { PassportPreview, PassportConfirmedWork } from '@/lib/passport'
+import type { WeeklyActivity } from '@/lib/weeklyActivity'
 
 export interface ApplicationsViewProps {
   signedIn: boolean
@@ -31,6 +37,11 @@ export interface ApplicationsViewProps {
   pendingAssessments: PendingAssessment[]
   /** Set right after a failed Google round trip. */
   initialAuthError?: AuthErrorCode | null
+  /** Everything below is signed-in only — the dashboard shell. */
+  name?: string
+  evidence?: PassportPreview['evidence'] | null
+  confirmedWork?: PassportConfirmedWork[]
+  weeklyActivity?: WeeklyActivity
 }
 
 export default function ApplicationsView(props: ApplicationsViewProps) {
@@ -41,7 +52,7 @@ const ACCENTS = ['orange', 'blue', 'green'] as const
 
 function ApplicationsInner({
   signedIn, items, loadFailed, recommended, hasExpertise, newJobsCount, notifications, pendingAssessments,
-  initialAuthError = null,
+  initialAuthError = null, name = '', evidence = null, confirmedWork = [], weeklyActivity,
 }: ApplicationsViewProps) {
   const { lang } = useLanguage()
   const t = useT()
@@ -85,17 +96,13 @@ function ApplicationsInner({
       timeZone: 'Africa/Dar_es_Salaam',
     })
 
-  async function handleSignOut() {
-    await signOutAction().catch(() => {})
-    window.dispatchEvent(new Event(AUTH_CHANGED_EVENT))
-    router.refresh()
-  }
-
   const activeAccess = items.filter((i) => i.access.state === 'active')
+  const interviewing = items.filter((i) => !i.withdrawn && i.status === 'interviewing')
+  const unreadNotifs = notifs.filter((n) => !n.read_at)
 
-  return (
-    <div className="form-shell">
-      {!signedIn ? (
+  if (!signedIn) {
+    return (
+      <div className="form-shell">
         <div className="mt-6">
           <h1 className="text-2xl font-extrabold text-ink">{t('applied', 'signInTitle')}</h1>
           <p className="mt-2 text-sm text-muted">{t('auth', 'intro')}</p>
@@ -108,65 +115,88 @@ function ApplicationsInner({
             />
           </div>
         </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <DashboardTopbar name={name} unreadCount={unreadNotifs.length} />
+
+      {loadFailed ? (
+        <p role="alert" className="text-sm font-semibold text-red-600">
+          {t('applied', 'loadError')}
+        </p>
       ) : (
         <>
-          <div className="mt-6 flex items-center justify-between gap-3">
-            <h1 className="text-2xl font-extrabold text-ink">{t('applied', 'title')}</h1>
-            <button type="button" onClick={handleSignOut} className="link-hover tap text-xs font-bold text-blue">
-              {t('applied', 'signOut')}
-            </button>
+          <StatTiles
+            recordsConfirmed={evidence?.recordsConfirmed ?? 0}
+            distinctConfirmers={evidence?.distinctConfirmers ?? 0}
+            repeatClients={evidence?.repeatClients ?? 0}
+            applicationsSent={items.filter((i) => !i.withdrawn).length}
+          />
+
+          <div className="mt-5 flex flex-wrap gap-5">
+            <div className="min-w-0 flex-[2] basis-[380px]">
+              {weeklyActivity && (
+                <WeeklyActivityChart
+                  days={weeklyActivity.days}
+                  total={weeklyActivity.total}
+                  previousTotal={weeklyActivity.previousTotal}
+                  dateLocale={dateLocale}
+                />
+              )}
+            </div>
+            <div className="flex min-w-0 flex-1 basis-[280px] flex-col gap-5">
+              <UpcomingCard pendingAssessments={pendingAssessments} interviewing={interviewing} />
+              <RecentConfirmationsCard confirmedWork={confirmedWork} fmt={fmt} />
+            </div>
           </div>
 
-          {loadFailed ? (
-            <p role="alert" className="mt-6 text-sm font-semibold text-red-600">
-              {t('applied', 'loadError')}
-            </p>
+          <NotificationsBanner notifications={unreadNotifs} onOpen={openNotification} />
+
+          {/* Who can see the passport right now. */}
+          <section className="glass mt-6 p-card" aria-labelledby="access-heading">
+            <h2 id="access-heading" className="text-sm font-extrabold text-ink">
+              {t('applied', 'accessTitle')}
+            </h2>
+            {activeAccess.length === 0 ? (
+              <p className="mt-2 text-sm text-muted">{t('applied', 'accessNone')}</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {activeAccess.map((item) => (
+                  <li key={item.id} className="text-sm text-ink">
+                    <span className="font-bold">{item.companyName}</span>
+                    <span className="text-muted"> · {item.jobTitle}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <h2 className="mt-8 text-lg font-extrabold text-ink">{t('dashboard', 'yourApplications')}</h2>
+
+          {items.length === 0 ? (
+            <div className="glass mt-4 p-card text-center">
+              <p className="text-base font-bold text-ink">{t('applied', 'emptyTitle')}</p>
+              <p className="mt-1 text-sm text-muted">{t('applied', 'emptyBody')}</p>
+            </div>
           ) : (
-            <>
-              <NotificationsBanner notifications={notifs.filter((n) => !n.read_at)} onOpen={openNotification} />
-
-              {/* Who can see the passport right now. */}
-              <section className="glass mt-6 p-card" aria-labelledby="access-heading">
-                <h2 id="access-heading" className="text-sm font-extrabold text-ink">
-                  {t('applied', 'accessTitle')}
-                </h2>
-                {activeAccess.length === 0 ? (
-                  <p className="mt-2 text-sm text-muted">{t('applied', 'accessNone')}</p>
-                ) : (
-                  <ul className="mt-3 space-y-2">
-                    {activeAccess.map((item) => (
-                      <li key={item.id} className="text-sm text-ink">
-                        <span className="font-bold">{item.companyName}</span>
-                        <span className="text-muted"> · {item.jobTitle}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-
-              {items.length === 0 ? (
-                <div className="glass mt-4 p-card text-center">
-                  <p className="text-base font-bold text-ink">{t('applied', 'emptyTitle')}</p>
-                  <p className="mt-1 text-sm text-muted">{t('applied', 'emptyBody')}</p>
-                </div>
-              ) : (
-                <ul className="mt-4 space-y-3">
-                  {items.map((item, i) => (
-                    <ApplicationCard
-                      key={item.id}
-                      item={item}
-                      accent={ACCENTS[i % 3]}
-                      fmt={fmt}
-                      highlighted={highlightId === item.id}
-                      pendingAssessment={pendingAssessments.some((p) => p.applicationId === item.id)}
-                    />
-                  ))}
-                </ul>
-              )}
-
-              <Recommendations recommended={recommended} hasExpertise={hasExpertise} newJobsCount={newJobsCount} />
-            </>
+            <ul className="mt-4 space-y-3">
+              {items.map((item, i) => (
+                <ApplicationCard
+                  key={item.id}
+                  item={item}
+                  accent={ACCENTS[i % 3]}
+                  fmt={fmt}
+                  highlighted={highlightId === item.id}
+                  pendingAssessment={pendingAssessments.some((p) => p.applicationId === item.id)}
+                />
+              ))}
+            </ul>
           )}
+
+          <Recommendations recommended={recommended} hasExpertise={hasExpertise} newJobsCount={newJobsCount} />
         </>
       )}
     </div>

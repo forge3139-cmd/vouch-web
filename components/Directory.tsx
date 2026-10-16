@@ -17,15 +17,23 @@ const sortLabelKey: Record<SortOption, 'sortJobsConfirmed' | 'sortRepeatClients'
 }
 const quickChipKeys = ['quickChipAc', 'quickChipTailor', 'quickChipCarpenter', 'quickChipElectrician', 'quickChipPhotographer'] as const
 
-export default function Directory({ initialEntries }: { initialEntries: DirectoryEntry[] }) {
-  return <DirectoryInner initialEntries={initialEntries} />
+export default function Directory({
+  initialEntries,
+  initialQuery,
+}: {
+  initialEntries: DirectoryEntry[]
+  /** Deep-linked from elsewhere (the dashboard's search box posts here as
+   * `?q=`) — runs the same search a typed query would, just already filled in. */
+  initialQuery?: string
+}) {
+  return <DirectoryInner initialEntries={initialEntries} initialQuery={initialQuery} />
 }
 
-function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }) {
+function DirectoryInner({ initialEntries, initialQuery }: { initialEntries: DirectoryEntry[]; initialQuery?: string }) {
   const { lang } = useLanguage()
   const t = useT()
 
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery ?? '')
   const [category, setCategory] = useState<Category | null>(null)
   const [sort, setSort] = useState<SortOption>('recently_active')
   const [entries, setEntries] = useState<DirectoryEntry[]>(initialEntries)
@@ -45,6 +53,14 @@ function DirectoryInner({ initialEntries }: { initialEntries: DirectoryEntry[] }
       setEntries(results)
     })
   }
+
+  // A deep-linked query (from the dashboard's search box) runs right away —
+  // no debounce, since it's not someone mid-typing.
+  useEffect(() => {
+    if (initialQuery?.trim()) runSearch({ query: initialQuery })
+    // Only ever for the query this page loaded with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Only the text search is debounced — category, sort, and chip clicks are
   // discrete actions and should feel instant.

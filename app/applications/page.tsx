@@ -4,6 +4,8 @@ import { loadMyApplications } from '@/lib/myApplications'
 import { loadRecommendedJobs } from '@/lib/recommendedJobs'
 import { loadNotifications } from '@/lib/notifications'
 import { getMyPendingAssessmentsAction } from '@/lib/assessmentActions'
+import { previewPassportAction } from '@/lib/passportActions'
+import { computeWeeklyActivity } from '@/lib/weeklyActivity'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,11 +42,12 @@ export default async function ApplicationsPage({
   const hasExpertise = applicant.expertise.length > 0
   // Only look for possibly-relevant jobs if there's expertise to compare;
   // the function returns nothing without it anyway.
-  const [items, recommended, notifications, pendingAssessments] = await Promise.all([
+  const [items, recommended, notifications, pendingAssessments, passport] = await Promise.all([
     loadMyApplications(applicant.identityId),
     hasExpertise ? loadRecommendedJobs(RECOMMENDED_FETCH_LIMIT) : Promise.resolve([]),
     loadNotifications(),
     getMyPendingAssessmentsAction(),
+    previewPassportAction(),
   ])
 
   // Computed from the OLD jobs_last_seen_at, read moments ago as part of
@@ -56,16 +59,23 @@ export default async function ApplicationsPage({
     ? (recommended ?? []).filter((j) => j.createdAt > since).length
     : 0
 
+  const liveItems = items ?? []
+  const weeklyActivity = computeWeeklyActivity(liveItems.filter((i) => !i.withdrawn).map((i) => i.appliedAt))
+
   return (
     <ApplicationsView
       signedIn
-      items={items ?? []}
+      name={applicant.name}
+      items={liveItems}
       loadFailed={items === null}
       recommended={recommended ? recommended.slice(0, RECOMMENDED_DISPLAY_LIMIT) : null}
       hasExpertise={hasExpertise}
       newJobsCount={newJobsCount}
       notifications={notifications ?? []}
       pendingAssessments={pendingAssessments}
+      evidence={passport.ok ? passport.preview.evidence : null}
+      confirmedWork={passport.ok ? passport.preview.confirmedWork : []}
+      weeklyActivity={weeklyActivity}
     />
   )
 }
