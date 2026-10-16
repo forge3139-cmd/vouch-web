@@ -1,30 +1,36 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
- * VOUCH web design tokens — the single source of truth. Mirrors the
- * mobile app's glass look: warm cream page with soft orange/blue glows
- * behind frosted-white cards, hero gradients, tinted icon circles, pill
- * filters. Change a value here and every page follows.
+ * VOUCH web design tokens — the single source of truth. Palette 20 —
+ * coral/orange/gold/teal/olive — warm cream page with soft coral/teal
+ * glows behind frosted-white cards, hero gradients, tinted icon circles,
+ * pill filters. "Blue" and "green" below are semantic slots (links/info,
+ * success) now carried by palette 20's teal and olive, not literal
+ * blue/green hues — every component that reads --color-blue/--color-green
+ * follows automatically. Change a value here and every page follows.
  * ------------------------------------------------------------------ */
 :root {
-  /* Palette */
+  /* Palette 20 */
   --color-cream: #f5f3f0; /* page background */
-  --color-orange: #ff8f00; /* orange — FF8F00 from the palette */
-  --color-orange-light: #fff1de;
-  --color-orange-soft: #ffb347; /* hero gradient end */
-  --color-blue: #47a5ff; /* accent: info, links, secondary actions */
-  --color-blue-light: #e8f3ff;
+  --color-orange: #ff8357; /* palette 20 — orange */
+  --color-orange-light: #fff0ea;
+  --color-orange-soft: #ffad86; /* hero gradient end */
+  --color-blue: #1e7a68; /* semantic slot: info, links, secondary actions — palette 20's teal, darkened for text contrast */
+  --color-blue-light: #e4f5f1;
   --color-neutral: #4c5055; /* icons, quiet UI */
   --color-ink: #000000; /* black — primary text */
   --color-muted: #4c5055; /* grey — secondary text */
   --color-faint: #9d9fa1;
-  --color-green: #2ecc71; /* success */
-  --color-green-tint: rgba(46, 204, 113, 0.16);
+  --color-green: #5e7a1e; /* semantic slot: success — palette 20's olive, darkened for text contrast */
+  --color-green-tint: rgba(94, 122, 30, 0.14);
   --color-card-border: #ecedee; /* solid dividers / empty fills */
 
-  /* Dashboard accent set (palette 20) — scoped to the signed-in dashboard
-   * (sidebar, stat tiles, activity chart, status chips), not a site-wide
-   * retheme: every other page keeps the orange/blue/green set above. */
+  /* Palette 20's own hues, undarkened — for gradients, glows and large
+   * fills where a light-on-cream tint reads better than the text-safe
+   * shades above. --dash-coral/--dash-orange duplicate --color-orange's
+   * family on purpose: the dashboard's three-stop hero gradient needs the
+   * full coral→orange→gold run, which the two-token semantic set above
+   * doesn't carry. */
   --dash-coral: #e25b45;
   --dash-orange: #ff8357;
   --dash-gold: #f5b95b;
@@ -35,9 +41,9 @@
   --dash-ink: #15151b;
 
   /* Tinted icon circles — visibly coloured, never grey */
-  --tint-orange: rgba(255, 143, 0, 0.16);
-  --tint-blue: rgba(71, 165, 255, 0.2);
-  --tint-green: rgba(46, 204, 113, 0.2);
+  --tint-orange: rgba(255, 131, 87, 0.18);
+  --tint-blue: rgba(137, 213, 201, 0.28);
+  --tint-green: rgba(173, 200, 101, 0.3);
 
   /* Glass — white at ~80–85%, real blur, bright 1px hairline, wide soft shadow */
   --glass-fill: rgba(255, 255, 255, 0.82);
@@ -50,7 +56,7 @@
   --hairline-dark: rgba(76, 80, 85, 0.14);
 
   /* Gradients */
-  --gradient-hero: linear-gradient(135deg, #ff8f00 0%, #ffb347 100%);
+  --gradient-hero: linear-gradient(135deg, #e25b45 0%, #ff8357 100%);
   --gradient-card: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 249, 243, 0.84) 100%);
   --gradient-dark: linear-gradient(160deg, #4c5055 0%, #000000 100%);
 
@@ -125,9 +131,10 @@ body {
   color: var(--color-ink);
 }
 
-/* Soft orange and blue glows behind every page. Radial gradients are
- * already feathered to nothing, so they need no filter (cheap on phones),
- * and they give the frosted cards real colour to blur. */
+/* Soft coral/orange and teal/olive glows behind every page — palette 20.
+ * Radial gradients are already feathered to nothing, so they need no
+ * filter (cheap on phones), and they give the frosted cards real colour
+ * to blur. */
 body::before {
   content: '';
   position: fixed;
@@ -135,10 +142,10 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 46% at 6% 2%, rgba(255, 143, 0, 0.34), transparent 70%),
-    radial-gradient(50% 42% at 100% 20%, rgba(71, 165, 255, 0.3), transparent 70%),
-    radial-gradient(46% 40% at 0% 60%, rgba(255, 143, 0, 0.22), transparent 70%),
-    radial-gradient(56% 46% at 94% 94%, rgba(71, 165, 255, 0.28), transparent 70%);
+    radial-gradient(60% 46% at 6% 2%, rgba(226, 91, 69, 0.3), transparent 70%),
+    radial-gradient(50% 42% at 100% 20%, rgba(137, 213, 201, 0.32), transparent 70%),
+    radial-gradient(46% 40% at 0% 60%, rgba(255, 131, 87, 0.24), transparent 70%),
+    radial-gradient(56% 46% at 94% 94%, rgba(173, 200, 101, 0.26), transparent 70%);
 }
 
 @layer components {
@@ -231,7 +238,7 @@ body::before {
   background: var(--gradient-hero);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 24px 56px -18px rgba(255, 143, 0, 0.55), 0 4px 16px rgba(255, 143, 0, 0.12);
+  box-shadow: 0 24px 56px -18px rgba(226, 91, 69, 0.5), 0 4px 16px rgba(226, 91, 69, 0.12);
 }
 .hero-card::after {
   content: '';
@@ -343,12 +350,12 @@ body::before {
   background: var(--color-blue);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 10px 24px -8px rgba(71, 165, 255, 0.6);
+  box-shadow: 0 10px 24px -8px rgba(30, 122, 104, 0.5);
 }
 .btn-orange {
   background: var(--gradient-hero);
   color: #fff;
-  box-shadow: 0 10px 24px -8px rgba(255, 143, 0, 0.6);
+  box-shadow: 0 10px 24px -8px rgba(226, 91, 69, 0.55);
 }
 
 /* Inputs */
