@@ -50,8 +50,8 @@ export default function UpcomingCard({
 
           {interviewing.map((item) => (
             <a key={item.id} href={`#app-${item.id}`} className="tap flex items-center gap-3 rounded-2xl bg-white/60 p-2.5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-dash-teal/20">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--dash-teal)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-dash-red/12">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--dash-red)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
                   <circle cx="10" cy="7" r="4" />
                 </svg>

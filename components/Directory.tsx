@@ -123,10 +123,10 @@ function DirectoryInner({ initialEntries, initialQuery }: { initialEntries: Dire
             <Badge variant="onHero" size="sm">
               {t('directory', 'heroPill')}
             </Badge>
-            <h1 className="mt-4 text-3xl leading-tight font-extrabold text-white sm:text-4xl lg:text-5xl">
+            <h1 className="mt-4 text-3xl leading-tight font-extrabold text-ink sm:text-4xl lg:text-5xl">
               {t('directory', 'heroTitle')}
             </h1>
-            <p className="mt-3 text-sm text-white/85 sm:text-base">{t('directory', 'heroSubtitle')}</p>
+            <p className="mt-3 text-sm text-muted sm:text-base">{t('directory', 'heroSubtitle')}</p>
 
             <form
               onSubmit={handleSearchSubmit}

@@ -1,61 +1,64 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
- * VOUCH web design tokens — the single source of truth. Palette: a navy
- * → teal → emerald → mint → pale-mint run (#205072, #329D9C, #56C596,
- * #7BE495, #CFF4D2) — warm cream page, cool navy/teal glows behind
- * frosted-white cards, hero gradients, tinted icon circles, pill filters.
- * "Blue" below is a semantic slot (links/info) carried by this palette's
- * own navy — genuinely blue-toned, not a borrowed hue. "Green" (success)
- * is a darkened version of the palette's emerald, for text contrast.
- * Change a value here and every page follows.
+ * VOUCH web design tokens — the single source of truth. Palette: deep
+ * navy (#161E2F, #242F49, #384358) and bold red/peach (#541A2E, #B51A2B,
+ * #FFA586) on a warm cream page (#FDF0D5).
+ *
+ * Glassmorphism rule, non-negotiable: navy and red NEVER fill a glass
+ * panel's own background — that hides the cream underneath and the whole
+ * point of frosted glass is that light passes through it. Panels
+ * (.glass, .glass-solid, .hero-card, dashboard cards) stay translucent
+ * white so the cream shows through the blur. Navy and red are strictly
+ * for foreground text and interactive targets: headings, buttons, links,
+ * icons, active states, small pills — never a big solid fill behind
+ * content. Change a value here and every page follows.
  * ------------------------------------------------------------------ */
 :root {
-  --color-cream: #f5f3f0; /* page background */
-  --color-orange: #329d9c; /* primary brand accent — the palette's teal */
-  --color-orange-light: #cff4d2; /* the palette's own pale step */
-  --color-orange-soft: #56c596; /* hero gradient end */
-  --color-blue: #205072; /* semantic slot: info, links, secondary actions — the palette's navy */
-  --color-blue-light: #e5edf1;
+  --color-cream: #fdf0d5; /* page background */
+  --color-orange: #b51a2b; /* bold red — primary interactive colour */
+  --color-orange-light: #fbe2da; /* light peach tint, for icon circles/badges only */
+  --color-orange-soft: #ffa586; /* peach — small accents, never a panel fill */
+  --color-blue: #242f49; /* mid navy — secondary interactive, links */
+  --color-blue-light: #e7e9ee;
   --color-neutral: #4c5055; /* icons, quiet UI */
-  --color-ink: #000000; /* black — primary text */
+  --color-ink: #161e2f; /* darkest navy — primary text */
   --color-muted: #4c5055; /* grey — secondary text */
   --color-faint: #9d9fa1;
-  --color-green: #2f8a63; /* semantic slot: success — the palette's emerald, darkened for text contrast */
-  --color-green-tint: rgba(86, 197, 150, 0.18);
+  --color-green: #384358; /* success slot — lightest navy, deliberately NOT red (red already means error/destructive elsewhere on this site) */
+  --color-green-tint: rgba(56, 67, 88, 0.12);
   --color-card-border: #ecedee; /* solid dividers / empty fills */
 
-  /* The palette's own five steps, undarkened — for gradients, glows and
-   * large fills where a light-on-cream tint reads better than the
-   * text-safe shades above. Navy and teal are dark enough to double as
-   * text/icon colour directly; emerald, mint and pale are for tints and
-   * fills only. */
-  --dash-navy: #205072;
-  --dash-teal: #329d9c;
-  --dash-emerald: #56c596;
-  --dash-mint: #7be495;
-  --dash-pale: #cff4d2;
-  --dash-ink: #15151b;
+  /* The palette's own steps, undarkened — for small interactive targets
+   * (buttons, icon badges, chart marks) and thin accents only. Never used
+   * as a full card/panel background — see the rule above. */
+  --dash-navy: #161e2f;
+  --dash-navy-mid: #242f49;
+  --dash-navy-light: #384358;
+  --dash-peach: #ffa586;
+  --dash-red: #b51a2b;
+  --dash-maroon: #541a2e;
 
   /* Tinted icon circles — visibly coloured, never grey */
-  --tint-orange: rgba(50, 157, 156, 0.18);
-  --tint-blue: rgba(32, 80, 114, 0.14);
-  --tint-green: rgba(86, 197, 150, 0.24);
+  --tint-orange: rgba(181, 26, 43, 0.12);
+  --tint-blue: rgba(36, 47, 73, 0.12);
+  --tint-green: rgba(56, 67, 88, 0.16);
 
   /* Glass — white at ~80–85%, real blur, bright 1px hairline, wide soft shadow */
   --glass-fill: rgba(255, 255, 255, 0.82);
   --glass-fill-raised: rgba(255, 255, 255, 0.72);
   --glass-border: rgba(255, 255, 255, 0.6);
   --glass-blur: 12px;
-  --glass-shadow: 0 20px 50px -14px rgba(76, 80, 85, 0.24), 0 4px 16px rgba(76, 80, 85, 0.06);
-  --glass-shadow-soft: 0 12px 32px -12px rgba(76, 80, 85, 0.18), 0 2px 8px rgba(76, 80, 85, 0.04);
-  --glass-shadow-hover: 0 26px 60px -14px rgba(76, 80, 85, 0.3), 0 6px 18px rgba(76, 80, 85, 0.08);
-  --hairline-dark: rgba(76, 80, 85, 0.14);
+  --glass-shadow: 0 20px 50px -14px rgba(22, 30, 47, 0.22), 0 4px 16px rgba(22, 30, 47, 0.05);
+  --glass-shadow-soft: 0 12px 32px -12px rgba(22, 30, 47, 0.16), 0 2px 8px rgba(22, 30, 47, 0.04);
+  --glass-shadow-hover: 0 26px 60px -14px rgba(22, 30, 47, 0.28), 0 6px 18px rgba(22, 30, 47, 0.08);
+  --hairline-dark: rgba(22, 30, 47, 0.14);
 
-  /* Gradients */
-  --gradient-hero: linear-gradient(135deg, #205072 0%, #329d9c 100%);
-  --gradient-card: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 249, 243, 0.84) 100%);
-  --gradient-dark: linear-gradient(160deg, #4c5055 0%, #000000 100%);
+  /* Gradients — for SMALL elements only (a logo mark, a thin progress
+   * bar fill, a button). Never a card/panel background. */
+  --gradient-hero: linear-gradient(135deg, #b51a2b 0%, #ffa586 100%);
+  --gradient-card: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 249, 238, 0.84) 100%);
+  --gradient-dark: linear-gradient(160deg, #384358 0%, #161e2f 100%);
 
   /* Shape */
   --radius-card: 1.25rem; /* cards, inputs, sheets */
@@ -104,11 +107,11 @@
   --color-card-border: var(--color-card-border);
 
   --color-dash-navy: var(--dash-navy);
-  --color-dash-teal: var(--dash-teal);
-  --color-dash-emerald: var(--dash-emerald);
-  --color-dash-mint: var(--dash-mint);
-  --color-dash-pale: var(--dash-pale);
-  --color-dash-ink: var(--dash-ink);
+  --color-dash-navy-mid: var(--dash-navy-mid);
+  --color-dash-navy-light: var(--dash-navy-light);
+  --color-dash-peach: var(--dash-peach);
+  --color-dash-red: var(--dash-red);
+  --color-dash-maroon: var(--dash-maroon);
 
   --radius-card: var(--radius-card);
   --radius-hero: var(--radius-hero);
@@ -126,10 +129,10 @@ body {
   color: var(--color-ink);
 }
 
-/* Soft navy/teal and emerald/mint glows behind every page. Radial
- * gradients are already feathered to nothing, so they need no
- * filter (cheap on phones), and they give the frosted cards real colour
- * to blur. */
+/* Soft navy and red/peach glows behind every page — faint and blurred to
+ * nothing, so they colour the glass cards without ever reading as a solid
+ * fill themselves. Radial gradients are already feathered, so they need
+ * no filter (cheap on phones). */
 body::before {
   content: '';
   position: fixed;
@@ -137,10 +140,10 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 46% at 6% 2%, rgba(32, 80, 114, 0.26), transparent 70%),
-    radial-gradient(50% 42% at 100% 20%, rgba(50, 157, 156, 0.3), transparent 70%),
-    radial-gradient(46% 40% at 0% 60%, rgba(86, 197, 150, 0.22), transparent 70%),
-    radial-gradient(56% 46% at 94% 94%, rgba(123, 228, 149, 0.24), transparent 70%);
+    radial-gradient(60% 46% at 6% 2%, rgba(22, 30, 47, 0.16), transparent 70%),
+    radial-gradient(50% 42% at 100% 20%, rgba(181, 26, 43, 0.14), transparent 70%),
+    radial-gradient(46% 40% at 0% 60%, rgba(255, 165, 134, 0.22), transparent 70%),
+    radial-gradient(56% 46% at 94% 94%, rgba(36, 47, 73, 0.14), transparent 70%);
 }
 
 @layer components {
@@ -220,31 +223,25 @@ body::before {
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass,
-  .glass-bar {
+  .glass-bar,
+  .hero-card {
     background: rgba(255, 255, 255, 0.95);
   }
 }
 
-/* Hero gradient card — the focal point of a page. */
+/* The focal point of a page — glass, not a solid fill, so the cream
+ * underneath still reads through the blur. Navy/red live in the content
+ * (headings, pills, buttons) placed inside it, never in this background. */
 .hero-card {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-hero);
-  background: var(--gradient-hero);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 24px 56px -18px rgba(32, 80, 114, 0.45), 0 4px 16px rgba(32, 80, 114, 0.12);
-}
-.hero-card::after {
-  content: '';
-  position: absolute;
-  top: -30%;
-  right: -10%;
-  width: 55%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.4), transparent);
-  pointer-events: none;
+  background: var(--glass-fill);
+  color: var(--color-ink);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  box-shadow: var(--glass-shadow);
 }
 .hero-card > * {
   position: relative;
@@ -313,10 +310,12 @@ body::before {
   border-color: transparent;
   color: #fff;
 }
+/* Hero is glass now too — these read as a subtle navy-tinted pill on it,
+ * not white-on-colour. */
 .pill-on-hero {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.5);
-  color: #fff;
+  background: rgba(22, 30, 47, 0.06);
+  border-color: rgba(22, 30, 47, 0.14);
+  color: var(--color-ink);
 }
 
 /* Buttons */
@@ -345,12 +344,12 @@ body::before {
   background: var(--color-blue);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 10px 24px -8px rgba(32, 80, 114, 0.5);
+  box-shadow: 0 10px 24px -8px rgba(36, 47, 73, 0.5);
 }
 .btn-orange {
   background: var(--gradient-hero);
   color: #fff;
-  box-shadow: 0 10px 24px -8px rgba(50, 157, 156, 0.5);
+  box-shadow: 0 10px 24px -8px rgba(181, 26, 43, 0.5);
 }
 
 /* Inputs */

@@ -17,10 +17,10 @@ export default function StatTiles({
   const t = useT()
 
   const tiles = [
-    { label: t('dashboard', 'statConfirmed'), value: recordsConfirmed, tint: 'bg-dash-emerald/25', icon: <path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5ZM9 12l2 2 4-4" /> },
-    { label: t('dashboard', 'statConfirmers'), value: distinctConfirmers, tint: 'bg-dash-teal/20', icon: <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /> },
-    { label: t('dashboard', 'statRepeat'), value: repeatClients, tint: 'bg-dash-mint/30', icon: <path d="M17 2.1 21 6l-4 3.9M3 12.1v-2a4 4 0 0 1 4-4h14M7 21.9l-4-3.9 4-3.9M21 11.9v2a4 4 0 0 1-4 4H3" /> },
-    { label: t('dashboard', 'statSent'), value: applicationsSent, tint: 'bg-dash-navy/15', icon: <path d="m22 2-7 20-4-9-9-4ZM22 2 11 13" /> },
+    { label: t('dashboard', 'statConfirmed'), value: recordsConfirmed, tint: 'bg-dash-red/12', icon: <path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5ZM9 12l2 2 4-4" /> },
+    { label: t('dashboard', 'statConfirmers'), value: distinctConfirmers, tint: 'bg-dash-navy/10', icon: <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /> },
+    { label: t('dashboard', 'statRepeat'), value: repeatClients, tint: 'bg-dash-peach/35', icon: <path d="M17 2.1 21 6l-4 3.9M3 12.1v-2a4 4 0 0 1 4-4h14M7 21.9l-4-3.9 4-3.9M21 11.9v2a4 4 0 0 1-4 4H3" /> },
+    { label: t('dashboard', 'statSent'), value: applicationsSent, tint: 'bg-dash-navy-mid/12', icon: <path d="m22 2-7 20-4-9-9-4ZM22 2 11 13" /> },
   ]
 
   return (
