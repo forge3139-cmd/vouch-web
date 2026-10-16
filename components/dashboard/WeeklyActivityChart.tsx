@@ -32,7 +32,7 @@ export default function WeeklyActivityChart({
     : '—'
 
   return (
-    <section className="rounded-[var(--radius-hero)] bg-[linear-gradient(150deg,var(--dash-coral)_0%,var(--dash-orange)_60%,var(--dash-gold)_100%)] p-6 text-white shadow-[0_24px_56px_-18px_rgba(226,91,69,0.55)]">
+    <section className="rounded-[var(--radius-hero)] bg-[linear-gradient(150deg,var(--dash-navy)_0%,var(--dash-teal)_60%,var(--dash-emerald)_100%)] p-6 text-white shadow-[0_24px_56px_-18px_rgba(32,80,114,0.5)]">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-[15px] font-extrabold">{t('dashboard', 'weekActivity')}</h2>
         <span className="rounded-pill bg-white/20 px-2.5 py-1 text-xs font-bold">{comparison}</span>
@@ -46,7 +46,7 @@ export default function WeeklyActivityChart({
           return (
             <div key={day.date} className="relative flex flex-1 flex-col items-center gap-2">
               {isPeak && (
-                <div className="absolute -top-7 whitespace-nowrap rounded-lg bg-white px-2 py-1 text-[10.5px] font-bold text-dash-coral">
+                <div className="absolute -top-7 whitespace-nowrap rounded-lg bg-white px-2 py-1 text-[10.5px] font-bold text-dash-navy">
                   {t('dashboard', 'sentCount', { count: day.count })}
                 </div>
               )}

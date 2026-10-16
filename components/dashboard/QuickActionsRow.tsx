@@ -8,7 +8,7 @@ export default function QuickActionsRow() {
     <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Link
         href="/jobs"
-        className="tap flex items-center justify-between rounded-[var(--radius-card)] bg-dash-teal p-5 text-[#10231e]"
+        className="tap flex items-center justify-between rounded-[var(--radius-card)] bg-dash-mint p-5 text-[#10231e]"
       >
         <span>
           <span className="block text-[15px] font-extrabold">{t('dashboard', 'actionFindJobs')}</span>
@@ -19,11 +19,11 @@ export default function QuickActionsRow() {
 
       <Link
         href="/request"
-        className="tap flex items-center justify-between rounded-[var(--radius-card)] bg-dash-olive p-5 text-[#1f2a0c]"
+        className="tap flex items-center justify-between rounded-[var(--radius-card)] bg-dash-emerald p-5 text-[#0f2a1f]"
       >
         <span>
           <span className="block text-[15px] font-extrabold">{t('dashboard', 'actionPostRequest')}</span>
-          <span className="mt-0.5 block text-xs font-medium text-[#1f2a0c]/70">{t('dashboard', 'actionPostRequestBody')}</span>
+          <span className="mt-0.5 block text-xs font-medium text-[#0f2a1f]/70">{t('dashboard', 'actionPostRequestBody')}</span>
         </span>
         <ChevronCircle />
       </Link>

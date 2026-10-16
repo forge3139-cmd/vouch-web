@@ -1,49 +1,46 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
- * VOUCH web design tokens — the single source of truth. Palette 20 —
- * coral/orange/gold/teal/olive — warm cream page with soft coral/teal
- * glows behind frosted-white cards, hero gradients, tinted icon circles,
- * pill filters. "Blue" and "green" below are semantic slots (links/info,
- * success) now carried by palette 20's teal and olive, not literal
- * blue/green hues — every component that reads --color-blue/--color-green
- * follows automatically. Change a value here and every page follows.
+ * VOUCH web design tokens — the single source of truth. Palette: a navy
+ * → teal → emerald → mint → pale-mint run (#205072, #329D9C, #56C596,
+ * #7BE495, #CFF4D2) — warm cream page, cool navy/teal glows behind
+ * frosted-white cards, hero gradients, tinted icon circles, pill filters.
+ * "Blue" below is a semantic slot (links/info) carried by this palette's
+ * own navy — genuinely blue-toned, not a borrowed hue. "Green" (success)
+ * is a darkened version of the palette's emerald, for text contrast.
+ * Change a value here and every page follows.
  * ------------------------------------------------------------------ */
 :root {
-  /* Palette 20 */
   --color-cream: #f5f3f0; /* page background */
-  --color-orange: #ff8357; /* palette 20 — orange */
-  --color-orange-light: #fff0ea;
-  --color-orange-soft: #ffad86; /* hero gradient end */
-  --color-blue: #1e7a68; /* semantic slot: info, links, secondary actions — palette 20's teal, darkened for text contrast */
-  --color-blue-light: #e4f5f1;
+  --color-orange: #329d9c; /* primary brand accent — the palette's teal */
+  --color-orange-light: #cff4d2; /* the palette's own pale step */
+  --color-orange-soft: #56c596; /* hero gradient end */
+  --color-blue: #205072; /* semantic slot: info, links, secondary actions — the palette's navy */
+  --color-blue-light: #e5edf1;
   --color-neutral: #4c5055; /* icons, quiet UI */
   --color-ink: #000000; /* black — primary text */
   --color-muted: #4c5055; /* grey — secondary text */
   --color-faint: #9d9fa1;
-  --color-green: #5e7a1e; /* semantic slot: success — palette 20's olive, darkened for text contrast */
-  --color-green-tint: rgba(94, 122, 30, 0.14);
+  --color-green: #2f8a63; /* semantic slot: success — the palette's emerald, darkened for text contrast */
+  --color-green-tint: rgba(86, 197, 150, 0.18);
   --color-card-border: #ecedee; /* solid dividers / empty fills */
 
-  /* Palette 20's own hues, undarkened — for gradients, glows and large
-   * fills where a light-on-cream tint reads better than the text-safe
-   * shades above. --dash-coral/--dash-orange duplicate --color-orange's
-   * family on purpose: the dashboard's three-stop hero gradient needs the
-   * full coral→orange→gold run, which the two-token semantic set above
-   * doesn't carry. */
-  --dash-coral: #e25b45;
-  --dash-orange: #ff8357;
-  --dash-gold: #f5b95b;
-  --dash-teal: #89d5c9;
-  --dash-teal-ink: #1e7a68;
-  --dash-olive: #adc865;
-  --dash-olive-ink: #5e7a1e;
+  /* The palette's own five steps, undarkened — for gradients, glows and
+   * large fills where a light-on-cream tint reads better than the
+   * text-safe shades above. Navy and teal are dark enough to double as
+   * text/icon colour directly; emerald, mint and pale are for tints and
+   * fills only. */
+  --dash-navy: #205072;
+  --dash-teal: #329d9c;
+  --dash-emerald: #56c596;
+  --dash-mint: #7be495;
+  --dash-pale: #cff4d2;
   --dash-ink: #15151b;
 
   /* Tinted icon circles — visibly coloured, never grey */
-  --tint-orange: rgba(255, 131, 87, 0.18);
-  --tint-blue: rgba(137, 213, 201, 0.28);
-  --tint-green: rgba(173, 200, 101, 0.3);
+  --tint-orange: rgba(50, 157, 156, 0.18);
+  --tint-blue: rgba(32, 80, 114, 0.14);
+  --tint-green: rgba(86, 197, 150, 0.24);
 
   /* Glass — white at ~80–85%, real blur, bright 1px hairline, wide soft shadow */
   --glass-fill: rgba(255, 255, 255, 0.82);
@@ -56,7 +53,7 @@
   --hairline-dark: rgba(76, 80, 85, 0.14);
 
   /* Gradients */
-  --gradient-hero: linear-gradient(135deg, #e25b45 0%, #ff8357 100%);
+  --gradient-hero: linear-gradient(135deg, #205072 0%, #329d9c 100%);
   --gradient-card: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 249, 243, 0.84) 100%);
   --gradient-dark: linear-gradient(160deg, #4c5055 0%, #000000 100%);
 
@@ -106,13 +103,11 @@
   --color-green-tint: var(--color-green-tint);
   --color-card-border: var(--color-card-border);
 
-  --color-dash-coral: var(--dash-coral);
-  --color-dash-orange: var(--dash-orange);
-  --color-dash-gold: var(--dash-gold);
+  --color-dash-navy: var(--dash-navy);
   --color-dash-teal: var(--dash-teal);
-  --color-dash-teal-ink: var(--dash-teal-ink);
-  --color-dash-olive: var(--dash-olive);
-  --color-dash-olive-ink: var(--dash-olive-ink);
+  --color-dash-emerald: var(--dash-emerald);
+  --color-dash-mint: var(--dash-mint);
+  --color-dash-pale: var(--dash-pale);
   --color-dash-ink: var(--dash-ink);
 
   --radius-card: var(--radius-card);
@@ -131,8 +126,8 @@ body {
   color: var(--color-ink);
 }
 
-/* Soft coral/orange and teal/olive glows behind every page — palette 20.
- * Radial gradients are already feathered to nothing, so they need no
+/* Soft navy/teal and emerald/mint glows behind every page. Radial
+ * gradients are already feathered to nothing, so they need no
  * filter (cheap on phones), and they give the frosted cards real colour
  * to blur. */
 body::before {
@@ -142,10 +137,10 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 46% at 6% 2%, rgba(226, 91, 69, 0.3), transparent 70%),
-    radial-gradient(50% 42% at 100% 20%, rgba(137, 213, 201, 0.32), transparent 70%),
-    radial-gradient(46% 40% at 0% 60%, rgba(255, 131, 87, 0.24), transparent 70%),
-    radial-gradient(56% 46% at 94% 94%, rgba(173, 200, 101, 0.26), transparent 70%);
+    radial-gradient(60% 46% at 6% 2%, rgba(32, 80, 114, 0.26), transparent 70%),
+    radial-gradient(50% 42% at 100% 20%, rgba(50, 157, 156, 0.3), transparent 70%),
+    radial-gradient(46% 40% at 0% 60%, rgba(86, 197, 150, 0.22), transparent 70%),
+    radial-gradient(56% 46% at 94% 94%, rgba(123, 228, 149, 0.24), transparent 70%);
 }
 
 @layer components {
@@ -238,7 +233,7 @@ body::before {
   background: var(--gradient-hero);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 24px 56px -18px rgba(226, 91, 69, 0.5), 0 4px 16px rgba(226, 91, 69, 0.12);
+  box-shadow: 0 24px 56px -18px rgba(32, 80, 114, 0.45), 0 4px 16px rgba(32, 80, 114, 0.12);
 }
 .hero-card::after {
   content: '';
@@ -350,12 +345,12 @@ body::before {
   background: var(--color-blue);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 10px 24px -8px rgba(30, 122, 104, 0.5);
+  box-shadow: 0 10px 24px -8px rgba(32, 80, 114, 0.5);
 }
 .btn-orange {
   background: var(--gradient-hero);
   color: #fff;
-  box-shadow: 0 10px 24px -8px rgba(226, 91, 69, 0.55);
+  box-shadow: 0 10px 24px -8px rgba(50, 157, 156, 0.5);
 }
 
 /* Inputs */

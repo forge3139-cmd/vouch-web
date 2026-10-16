@@ -33,8 +33,8 @@ export default function UpcomingCard({
               href={`/applications/assessment/${a.applicationId}`}
               className="tap flex items-center gap-3 rounded-2xl bg-white/60 p-2.5"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-dash-coral/15">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--dash-coral)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-dash-navy/12">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--dash-navy)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6M9 15h6" />
                 </svg>
@@ -50,8 +50,8 @@ export default function UpcomingCard({
 
           {interviewing.map((item) => (
             <a key={item.id} href={`#app-${item.id}`} className="tap flex items-center gap-3 rounded-2xl bg-white/60 p-2.5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-dash-gold/25">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#B9821F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-dash-teal/20">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--dash-teal)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
                   <circle cx="10" cy="7" r="4" />
                 </svg>

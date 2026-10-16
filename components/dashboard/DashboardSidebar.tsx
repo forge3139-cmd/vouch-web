@@ -54,7 +54,7 @@ export default function DashboardSidebar({ slug }: { slug: string | null }) {
   }
 
   return (
-    <aside className="flex w-[68px] shrink-0 flex-col items-center gap-2 bg-[linear-gradient(180deg,var(--dash-coral),var(--dash-orange))] py-5">
+    <aside className="flex w-[68px] shrink-0 flex-col items-center gap-2 bg-[linear-gradient(180deg,var(--dash-navy),var(--dash-teal))] py-5">
       <RailLink href="/" label={t('nav', 'home')} active={false} tone="brand">
         <path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5ZM9 12l2 2 4-4" />
       </RailLink>
@@ -111,9 +111,9 @@ function RailLink({
         aria-current={active ? 'page' : undefined}
         className={`tap flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${
           active
-            ? 'bg-white text-dash-coral'
+            ? 'bg-white text-dash-navy'
             : tone === 'brand'
-              ? 'bg-white/95 text-dash-coral'
+              ? 'bg-white/95 text-dash-navy'
               : 'text-white/85 hover:bg-white/15 hover:text-white'
         }`}
       >
