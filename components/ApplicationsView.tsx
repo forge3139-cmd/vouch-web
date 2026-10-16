@@ -125,7 +125,7 @@ function ApplicationsInner({
   }
 
   return (
-    <div>
+    <div className="p-5 sm:p-8">
       <DashboardTopbar name={name} unreadCount={unreadNotifs.length} />
 
       {loadFailed ? (

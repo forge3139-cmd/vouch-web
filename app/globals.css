@@ -5,17 +5,16 @@
  * navy (#161E2F, #242F49, #384358) and bold red/peach (#541A2E, #B51A2B,
  * #FFA586) on a warm cream page (#FDF0D5).
  *
- * Glassmorphism rule, non-negotiable: navy and red NEVER fill a glass
- * panel's own background — that hides the cream underneath and the whole
- * point of frosted glass is that light passes through it. Panels
- * (.glass, .glass-solid, .hero-card, dashboard cards) stay translucent
- * white so the cream shows through the blur. Navy and red are strictly
- * for foreground text and interactive targets: headings, buttons, links,
- * icons, active states, small pills — never a big solid fill behind
- * content. Change a value here and every page follows.
+ * The site frame is a sidebar + one floating white sheet (AppSidebar /
+ * AppShell) holding every page's content. Content cards inside that sheet
+ * are bold solid fills now — navy, red, peach — not translucent glass;
+ * `.glass`/`.glass-solid` still exist for the odd subtler surface (an
+ * inset list row, a quiet inline note) but are no longer the default.
+ * Change a value here and every page follows.
  * ------------------------------------------------------------------ */
 :root {
-  --color-cream: #fdf0d5; /* page background */
+  --color-cream: #fdf0d5; /* page background, visible as the margin around the white sheet */
+  --color-sand: #fbe9d0; /* the sidebar's own panel — one shade deeper than the page */
   --color-orange: #b51a2b; /* bold red — primary interactive colour */
   --color-orange-light: #fbe2da; /* light peach tint, for icon circles/badges only */
   --color-orange-soft: #ffa586; /* peach — small accents, never a panel fill */
@@ -93,6 +92,7 @@
 @theme inline {
   --font-sans: var(--font-inter);
   --color-cream: var(--color-cream);
+  --color-sand: var(--color-sand);
   --color-orange: var(--color-orange);
   --color-orange-light: var(--color-orange-light);
   --color-orange-soft: var(--color-orange-soft);
@@ -155,25 +155,6 @@ body::before {
   padding-inline: var(--spacing-page);
 }
 
-/* The signed-in dashboard: sidebar + wide content, unlike the narrow
- * single-column forms below. */
-.dashboard-shell {
-  display: flex;
-  flex-wrap: wrap;
-  min-height: 100%;
-  flex: 1;
-}
-.dashboard-main {
-  flex: 999 1 560px;
-  min-width: 0;
-  padding: 1.75rem 1.5rem 3rem;
-}
-@media (min-width: 1024px) {
-  .dashboard-main {
-    padding: 2rem 2.5rem 3.5rem;
-  }
-}
-
 /* Request and confirmation forms stay narrow and centred at every size. */
 .form-shell {
   display: flex;
@@ -223,25 +204,30 @@ body::before {
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass,
-  .glass-bar,
-  .hero-card {
+  .glass-bar {
     background: rgba(255, 255, 255, 0.95);
   }
 }
 
-/* The focal point of a page — glass, not a solid fill, so the cream
- * underneath still reads through the blur. Navy/red live in the content
- * (headings, pills, buttons) placed inside it, never in this background. */
+/* The focal point of a page — a bold solid fill, white text. */
 .hero-card {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-hero);
-  background: var(--glass-fill);
-  color: var(--color-ink);
-  border: 1px solid var(--glass-border);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-  box-shadow: var(--glass-shadow);
+  background: var(--gradient-hero);
+  color: #fff;
+  box-shadow: 0 24px 56px -18px rgba(181, 26, 43, 0.45), 0 4px 16px rgba(181, 26, 43, 0.12);
+}
+.hero-card::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.35), transparent);
+  pointer-events: none;
 }
 .hero-card > * {
   position: relative;
@@ -310,12 +296,10 @@ body::before {
   border-color: transparent;
   color: #fff;
 }
-/* Hero is glass now too — these read as a subtle navy-tinted pill on it,
- * not white-on-colour. */
 .pill-on-hero {
-  background: rgba(22, 30, 47, 0.06);
-  border-color: rgba(22, 30, 47, 0.14);
-  color: var(--color-ink);
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
 }
 
 /* Buttons */

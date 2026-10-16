@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import HandoffListener from '@/components/HandoffListener'
-import SiteHeader from '@/components/SiteHeader'
+import AppSidebar from '@/components/layout/AppSidebar'
+import AppShell from '@/components/layout/AppShell'
 import { LanguageProvider } from '@/components/LanguageContext'
 import './globals.css'
 
@@ -28,8 +29,10 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       <body className="min-h-full flex flex-col bg-cream text-ink">
         <HandoffListener />
         <LanguageProvider>
-          <SiteHeader />
-          {children}
+          <div className="flex min-h-full w-full flex-col lg:flex-row">
+            <AppSidebar />
+            <AppShell>{children}</AppShell>
+          </div>
         </LanguageProvider>
       </body>
     </html>

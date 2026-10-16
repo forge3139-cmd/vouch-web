@@ -88,7 +88,7 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
           {/* Left column on desktop: identity, about, evidence, the record */}
           <div className="space-y-4">
             <section className="hero-card p-5 sm:p-7">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl border border-ink/10 bg-ink/5 text-3xl font-bold text-ink sm:h-24 sm:w-24">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl border border-white/50 bg-white/25 text-3xl font-bold text-white sm:h-24 sm:w-24">
                 {worker.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URL, not a local/optimizable asset
                   <img src={worker.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -97,7 +97,7 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
                 )}
               </div>
 
-              <h1 className="mt-4 text-2xl font-extrabold text-ink sm:text-3xl">{worker.display_name}</h1>
+              <h1 className="mt-4 text-2xl font-extrabold text-white sm:text-3xl">{worker.display_name}</h1>
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {expertise.map((entry) => (
@@ -106,7 +106,7 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
                   </Badge>
                 ))}
                 {worker.location && (
-                  <span className="flex items-center gap-1 text-xs text-muted">
+                  <span className="flex items-center gap-1 text-xs text-white/85">
                     <PinIcon />
                     {worker.location}
                   </span>
@@ -116,14 +116,14 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
               <div className="mt-3">
                 {hasWork ? (
                   <>
-                    <p className="text-base font-bold text-ink">
+                    <p className="text-base font-bold text-white">
                       {t('directory', 'evidenceCount', {
                         records: totalConfirmed,
                         confirmers: evidence?.distinct_confirmers ?? 0,
                       })}
                     </p>
                     {!!evidence?.repeat_clients && (
-                      <p className="mt-1 text-sm font-bold text-muted">
+                      <p className="mt-1 text-sm font-bold text-white/90">
                         {t('directory', evidence.repeat_clients === 1 ? 'repeatClient' : 'repeatClients', {
                           count: evidence.repeat_clients,
                         })}
@@ -131,7 +131,7 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
                     )}
                   </>
                 ) : (
-                  <p className="text-base font-bold text-ink">{t('profile', 'newOnVouchFull')}</p>
+                  <p className="text-base font-bold text-white">{t('profile', 'newOnVouchFull')}</p>
                 )}
               </div>
 

@@ -8,7 +8,7 @@ const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   green: 'bg-green-tint text-green',
   blue: 'bg-blue-light text-blue',
   outline: 'pill text-ink',
-  onHero: 'border border-ink/10 bg-ink/5 text-ink',
+  onHero: 'border border-white/50 bg-white/25 text-white',
 }
 
 const SIZE_CLASSES: Record<BadgeSize, string> = {

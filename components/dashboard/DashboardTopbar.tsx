@@ -54,10 +54,6 @@ export default function DashboardTopbar({
             <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-dash-navy" aria-hidden="true" />
           )}
         </a>
-
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-sm font-bold text-white" aria-hidden="true">
-          {name.charAt(0).toUpperCase()}
-        </div>
       </div>
     </div>
   )
