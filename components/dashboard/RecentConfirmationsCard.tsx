@@ -25,7 +25,7 @@ export default function RecentConfirmationsCard({
         <ul className="mt-3.5 flex flex-col gap-3.5">
           {recent.map((work, i) => (
             <li key={i} className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange/20 text-xs font-extrabold text-orange">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange/30 text-xs font-extrabold text-ink">
                 {(work.confirmer_name ?? '?').charAt(0).toUpperCase()}
               </span>
               <span className="min-w-0 flex-1">

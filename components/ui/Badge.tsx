@@ -4,11 +4,11 @@ export type BadgeVariant = 'orange' | 'green' | 'blue' | 'outline' | 'onHero'
 export type BadgeSize = 'sm' | 'md'
 
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
-  orange: 'bg-orange-light text-orange',
+  orange: 'bg-orange-light text-ink',
   green: 'bg-green-tint text-green',
   blue: 'bg-blue-light text-blue',
   outline: 'pill text-ink',
-  onHero: 'border border-white/50 bg-white/25 text-white',
+  onHero: 'border border-ink/10 bg-white/70 text-ink',
 }
 
 const SIZE_CLASSES: Record<BadgeSize, string> = {

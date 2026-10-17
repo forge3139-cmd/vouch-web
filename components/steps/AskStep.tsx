@@ -46,7 +46,7 @@ export default function AskStep({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="mt-4 text-sm font-bold text-orange"
+          className="mt-4 text-sm font-bold text-blue"
         >
           {expanded ? t('ask', 'seeLess') : t('ask', 'seeMore')}
         </button>

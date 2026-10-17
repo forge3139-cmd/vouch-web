@@ -1,74 +1,72 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
- * VOUCH web design tokens — the single source of truth. Palette: "Luna"
- * — deep base navy (#011C40) canvas, premium contrast blue (#023859)
- * structural panels, muted steel/slate blue (#26658C / #54ACBF) secondary
- * accents, crisp ice blue (#A7EBF2) for every interactive/active surface,
- * solid white primary text.
+ * VOUCH web design tokens — the single source of truth. Palette:
+ * "Aurora" — a warm off-white canvas, flat white cards with soft
+ * shadows (no glass/blur this round), pastel accent fills (mint/teal,
+ * peach, pale yellow, soft coral) for small decorative surfaces, a
+ * bright lime-green accent for every active/interactive state, and
+ * solid near-black for primary text and primary buttons.
  *
- * The site frame is a sidebar beside the page's own dark canvas — no
- * separate white sheet; the sidebar and the content share one continuous
- * Luna-navy surface with a soft atmospheric glow behind everything.
- * Every card is real glassmorphism: `rgba(255,255,255,0.05)` fill,
- * `blur(24px)`, a bare 1px hairline border — never a solid colour fill.
+ * Every page shares one sidebar + content frame; the sidebar and the
+ * content sit on the same warm-white canvas, divided by a hairline.
+ * Cards are solid, rounded, soft-shadowed — never translucent.
  * Change a value here and every page follows.
  * ------------------------------------------------------------------ */
 :root {
-  --color-cream: #011c40; /* deep base navy — the page canvas, everywhere */
-  --color-sand: #023859; /* premium contrast blue — the sidebar's own panel */
-  --color-orange: #a7ebf2; /* ice blue — every interactive accent, active state, primary CTA */
-  --color-orange-light: rgba(167, 235, 242, 0.14); /* ice tint, for icon circles/badges only */
-  --color-orange-soft: #54acbf; /* slate-light — small secondary accents */
-  --color-blue: #54acbf; /* muted slate blue — secondary interactive, links */
-  --color-blue-light: rgba(84, 172, 191, 0.16);
-  --color-neutral: rgba(255, 255, 255, 0.55); /* icons, quiet UI */
-  --color-ink: #ffffff; /* solid white — primary text and headers */
-  --color-muted: rgba(255, 255, 255, 0.55); /* secondary text */
-  --color-faint: rgba(255, 255, 255, 0.35);
-  --color-green: #6ee7b7; /* success slot — kept distinct from ice (interactive) and from errors */
-  --color-green-tint: rgba(110, 231, 183, 0.14);
-  --color-card-border: rgba(255, 255, 255, 0.12); /* hairline dividers, matches the glass border */
+  --color-cream: #faf7f0; /* page canvas — warm off-white */
+  --color-sand: #ffffff; /* the sidebar's own panel */
+  --color-orange: #d7f24e; /* lime green — every interactive accent, active state */
+  --color-orange-light: rgba(199, 230, 83, 0.3); /* lime tint, for icon circles/badges only */
+  --color-orange-soft: #eaf7a8; /* pale lime — small secondary accents */
+  --color-blue: #0e9488; /* teal — secondary interactive, links */
+  --color-blue-light: rgba(14, 148, 136, 0.12);
+  --color-neutral: #71717a; /* icons, quiet UI */
+  --color-ink: #18181b; /* near-black — primary text */
+  --color-muted: #71717a; /* secondary text */
+  --color-faint: #a1a1aa;
+  --color-green: #22a06b; /* success slot — kept distinct from lime (interactive) and from errors */
+  --color-green-tint: rgba(34, 160, 107, 0.12);
+  --color-card-border: rgba(24, 24, 27, 0.08); /* hairline dividers */
 
-  /* The palette's own steps — decorative accents (icon tints, chart
-   * marks) drawn from the same Luna blues. Never a full card/panel fill —
-   * see the glass rule above. */
-  --dash-navy: #26658c;
-  --dash-navy-mid: #54acbf;
-  --dash-navy-light: #a7ebf2;
-  --dash-peach: #54acbf;
-  --dash-red: #a7ebf2;
-  --dash-maroon: #023859;
+  /* The palette's own steps — pastel accents for icon tints, chart
+   * marks and small decorative fills. Never a full card background on
+   * their own — see the card rules below. */
+  --dash-navy: #0e9488;
+  --dash-navy-mid: #bfebd8;
+  --dash-navy-light: #e3f6ec;
+  --dash-peach: #f6d9c4;
+  --dash-red: #f3b8b0;
+  --dash-maroon: #18181b;
 
   /* Tinted icon circles — visibly coloured, never grey */
-  --tint-orange: rgba(167, 235, 242, 0.12);
-  --tint-blue: rgba(84, 172, 191, 0.14);
-  --tint-green: rgba(110, 231, 183, 0.14);
+  --tint-orange: rgba(199, 230, 83, 0.35);
+  --tint-blue: rgba(14, 148, 136, 0.14);
+  --tint-green: rgba(34, 160, 107, 0.14);
 
-  /* Glass — the exact Luna formula: a near-invisible white fill, a real
-   * 24px blur, and a bare 1px hairline border. Never saturate() — the
-   * navy canvas does the colouring. */
-  --glass-fill: rgba(255, 255, 255, 0.05);
-  --glass-fill-raised: rgba(255, 255, 255, 0.07);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-blur: 24px;
-  --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  --glass-shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.3);
-  --glass-shadow-hover: 0 24px 48px rgba(0, 0, 0, 0.38);
-  --hairline-dark: rgba(255, 255, 255, 0.14);
+  /* Cards — flat white, soft shadow, no blur. The class names stay
+   * `.glass`/`.glass-solid` from earlier rounds; this round's look is
+   * flat, not frosted. */
+  --glass-fill: #ffffff;
+  --glass-fill-raised: #ffffff;
+  --glass-border: rgba(24, 24, 27, 0.08);
+  --glass-blur: 0px;
+  --glass-shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 16px 32px -20px rgba(24, 24, 27, 0.14);
+  --glass-shadow-soft: 0 1px 2px rgba(24, 24, 27, 0.03), 0 10px 24px -16px rgba(24, 24, 27, 0.1);
+  --glass-shadow-hover: 0 22px 44px -20px rgba(24, 24, 27, 0.2);
+  --hairline-dark: rgba(24, 24, 27, 0.12);
 
-  /* Gradients — for SMALL elements only (a logo mark, a thin progress
-   * bar fill). Never a card/panel background — see `.hero-card` below,
-   * which has none. */
-  --gradient-hero: linear-gradient(135deg, #26658c 0%, #a7ebf2 100%);
-  --gradient-card: rgba(255, 255, 255, 0.05);
-  --gradient-dark: linear-gradient(135deg, #023859 0%, #011c40 100%);
+  /* Gradients — the hero card's own soft peach-to-yellow wash, and a
+   * small logo mark. Never a full list-card background. */
+  --gradient-hero: linear-gradient(135deg, #f6d9c4 0%, #f3e8c9 100%);
+  --gradient-card: #ffffff;
+  --gradient-dark: linear-gradient(135deg, #27272a 0%, #18181b 100%);
 
   /* Shape */
   --radius-card: 1.25rem; /* cards, inputs, sheets */
   --radius-hero: 1.75rem;
   --radius-pill: 9999px;
-  --shadow-float: 0 -8px 32px rgba(0, 0, 0, 0.35);
+  --shadow-float: 0 -8px 24px rgba(24, 24, 27, 0.08);
 
   /* Layout */
   --spacing-page: 1.25rem; /* phone gutter */
@@ -77,8 +75,7 @@
   --form-max: 560px;
 }
 
-/* Tablet: wider padding. Desktop: wider gutter (cheap phones keep the
- * small radius; blur stays the exact 24px spec at every size). */
+/* Tablet: wider padding. Desktop: wider gutter. */
 @media (min-width: 640px) {
   :root {
     --spacing-page: 2rem;
@@ -132,20 +129,6 @@ body {
   color: var(--color-ink);
 }
 
-/* Atmospheric depth: a soft, wide, barely-there slate-blue glow top-right
- * and bottom-left — the one thing behind every glass card that gives the
- * dark navy canvas its sense of light. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(50% 45% at 94% 0%, rgba(84, 172, 191, 0.12), transparent 70%),
-    radial-gradient(46% 42% at 2% 90%, rgba(84, 172, 191, 0.09), transparent 70%);
-}
-
 @layer components {
 /* ---- Layout ---- */
 .page-container {
@@ -171,51 +154,51 @@ body::before {
   }
 }
 
-/* ---- Glass materials — the exact Luna spec ---- */
+/* ---- Cards — flat white, soft shadow ---- */
 
-/* Real frosted glass — the default surface for every card, sheet and
- * panel on the site. */
 .glass {
   background: var(--glass-fill);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   border-radius: var(--radius-card);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
 }
 
-/* Sticky bars (bottom apply bar): same glass, no blur cost difference —
- * kept as its own class for the hairline-top treatment. */
+/* Sticky bars (bottom apply bar). */
 .glass-bar {
   background: var(--glass-fill-raised);
   border-color: var(--glass-border);
-  box-shadow: 0 -8px 28px -16px rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 -8px 24px -16px rgba(24, 24, 27, 0.14);
 }
 
-/* List cards: the same glass look, but a plain translucent fill instead
- * of a blur, so long lists stay cheap to paint. */
+/* List cards: same flat white look, lighter shadow — cheap to paint
+ * on a long list. */
 .glass-solid {
-  background: rgba(255, 255, 255, 0.06);
+  background: #ffffff;
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow-soft);
   border-radius: var(--radius-card);
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass,
-  .glass-bar {
-    background: rgba(2, 20, 46, 0.92);
-  }
-}
-
-/* The focal point of a page — on the Luna canvas this is just the page
- * itself: bold white text directly on the dark navy + glow, no card
- * chrome, no solid fill. */
+/* The focal point of a page — a soft pastel gradient wash, dark text,
+ * never a glass/transparent treatment. */
 .hero-card {
   position: relative;
-  color: #fff;
+  overflow: hidden;
+  border-radius: var(--radius-hero);
+  background: var(--gradient-hero);
+  color: var(--color-ink);
+  box-shadow: var(--glass-shadow);
+}
+.hero-card::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.55), transparent);
+  pointer-events: none;
 }
 .hero-card > * {
   position: relative;
@@ -229,7 +212,7 @@ body::before {
   gap: 0.5rem;
   padding: 0.9rem;
   border-radius: 1rem;
-  background: var(--glass-fill);
+  background: #ffffff;
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow-soft);
 }
@@ -244,7 +227,7 @@ body::before {
 }
 .icon-circle-orange {
   background: var(--tint-orange);
-  color: var(--color-orange);
+  color: #4d6b0a;
 }
 .icon-circle-blue {
   background: var(--tint-blue);
@@ -269,25 +252,25 @@ body::before {
   --accent: var(--color-green);
 }
 
-/* Pill filters — translucent glass when inactive, solid ice blue with
- * dark navy text the moment they're active. */
+/* Pill filters — plain white when inactive, solid lime with dark text
+ * the moment they're active. */
 .pill {
   display: inline-flex;
   align-items: center;
   border-radius: var(--radius-pill);
   border: 1px solid var(--glass-border);
-  background: var(--glass-fill-raised);
-  color: rgba(255, 255, 255, 0.75);
+  background: #ffffff;
+  color: var(--color-muted);
 }
 .pill-active {
   background: var(--color-orange);
   border-color: transparent;
-  color: #011c40;
+  color: var(--color-ink);
 }
 .pill-on-hero {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.22);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(24, 24, 27, 0.12);
+  color: var(--color-ink);
 }
 
 /* Buttons */
@@ -301,35 +284,35 @@ body::before {
   transition: filter 150ms ease, opacity 150ms ease;
 }
 .btn-dark {
-  background: var(--color-orange);
-  color: #011c40;
+  background: #18181b;
+  color: #fff;
   border: 1px solid transparent;
-  box-shadow: 0 10px 24px -8px rgba(167, 235, 242, 0.35);
+  box-shadow: 0 10px 20px -10px rgba(24, 24, 27, 0.45);
 }
 .btn-glass {
-  background: var(--glass-fill-raised);
-  color: #fff;
+  background: #ffffff;
+  color: var(--color-ink);
   border: 1px solid var(--glass-border);
   box-shadow: none;
 }
 .btn-blue {
   background: var(--color-blue);
-  color: #011c40;
+  color: #fff;
   border: 1px solid transparent;
-  box-shadow: 0 10px 24px -8px rgba(84, 172, 191, 0.4);
+  box-shadow: 0 10px 20px -10px rgba(14, 148, 136, 0.4);
 }
 .btn-orange {
   background: var(--color-orange);
-  color: #011c40;
+  color: var(--color-ink);
   border: 1px solid transparent;
-  box-shadow: 0 10px 24px -8px rgba(167, 235, 242, 0.35);
+  box-shadow: 0 10px 20px -10px rgba(199, 230, 83, 0.5);
 }
 
 /* Inputs */
 .field {
   border-radius: var(--radius-card);
   border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   color: var(--color-ink);
   outline: none;
   transition: border-color 150ms ease, box-shadow 150ms ease;
@@ -356,15 +339,15 @@ body::before {
     box-shadow: var(--glass-shadow-hover);
   }
   .btn:hover {
-    filter: brightness(1.08);
+    filter: brightness(1.06);
   }
   .btn-glass:hover,
   .pill:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #f7f5ee;
   }
   .pill-active:hover,
   .pill-on-hero:hover {
-    filter: brightness(1.08);
+    filter: brightness(1.04);
   }
   .link-hover:hover {
     text-decoration: underline;

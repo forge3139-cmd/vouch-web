@@ -226,7 +226,7 @@ export default function AppSidebar() {
 
 function Logo() {
   return (
-    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[image:var(--gradient-hero)] text-sm font-extrabold text-white">
+    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[image:var(--gradient-hero)] text-sm font-extrabold text-ink">
       V
     </span>
   )

@@ -32,7 +32,7 @@ export default function StatTiles({
               {tile.icon}
             </svg>
           </div>
-          <p className="mt-3 text-[26px] font-extrabold leading-none text-orange">{tile.value}</p>
+          <p className="mt-3 text-[26px] font-extrabold leading-none text-ink">{tile.value}</p>
           <p className="mt-1.5 text-xs font-semibold text-muted">{tile.label}</p>
         </div>
       ))}

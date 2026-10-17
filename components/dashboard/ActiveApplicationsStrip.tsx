@@ -34,7 +34,7 @@ export default function ActiveApplicationsStrip({ items }: { items: MyApplicatio
               <div className="h-1.5 w-full overflow-hidden rounded-pill bg-card-border">
                 <div className="h-full rounded-pill bg-dash-red" style={{ width: `${pct}%` }} />
               </div>
-              <p className="mt-1.5 text-[11px] font-semibold text-orange">{t('applied', STATUS_LABEL_KEYS[item.status])}</p>
+              <p className="mt-1.5 text-[11px] font-semibold text-blue">{t('applied', STATUS_LABEL_KEYS[item.status])}</p>
             </div>
           </a>
         )

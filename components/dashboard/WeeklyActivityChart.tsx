@@ -34,10 +34,10 @@ export default function WeeklyActivityChart({
     : '—'
 
   return (
-    <section className="glass p-6 text-white">
+    <section className="glass p-6 text-ink">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-[15px] font-extrabold">{t('dashboard', 'weekActivity')}</h2>
-        <span className="rounded-pill bg-white/10 px-2.5 py-1 text-xs font-bold">{comparison}</span>
+        <span className="rounded-pill bg-black/5 px-2.5 py-1 text-xs font-bold text-muted">{comparison}</span>
       </div>
 
       <div className="mt-7 flex items-end gap-2.5 sm:gap-4" style={{ height: '120px' }}>
@@ -48,32 +48,32 @@ export default function WeeklyActivityChart({
           return (
             <div key={day.date} className="relative flex flex-1 flex-col items-center gap-2">
               {isPeak && (
-                <div className="absolute -top-7 whitespace-nowrap rounded-lg bg-orange px-2 py-1 text-[10.5px] font-bold text-[#011c40]">
+                <div className="absolute -top-7 whitespace-nowrap rounded-lg bg-ink px-2 py-1 text-[10.5px] font-bold text-white">
                   {t('dashboard', 'sentCount', { count: day.count })}
                 </div>
               )}
               <div
-                className={`w-full max-w-7 rounded-t-lg rounded-b-sm ${isPeak ? 'bg-orange' : 'bg-[#26658c]/40'}`}
+                className={`w-full max-w-7 rounded-t-lg rounded-b-sm ${isPeak ? 'bg-orange' : 'bg-dash-navy/20'}`}
                 style={{ height: `${heightPct}%` }}
               />
-              <span className={`text-[11px] font-semibold ${isPeak ? 'text-white' : 'text-white/60'}`}>{label}</span>
+              <span className={`text-[11px] font-semibold ${isPeak ? 'text-ink' : 'text-muted'}`}>{label}</span>
             </div>
           )
         })}
       </div>
 
-      <div className="mt-6 flex items-center gap-6 border-t border-white/15 pt-4">
+      <div className="mt-6 flex items-center gap-6 border-t border-card-border pt-4">
         <div>
           <p className="text-lg font-extrabold leading-none">{total}</p>
-          <p className="mt-1 text-[11px] font-semibold text-white/65">{t('dashboard', 'weekActivity')}</p>
+          <p className="mt-1 text-[11px] font-semibold text-muted">{t('dashboard', 'weekActivity')}</p>
         </div>
         <div>
           <p className="text-lg font-extrabold leading-none">{peakLabel}</p>
-          <p className="mt-1 text-[11px] font-semibold text-white/65">{t('dashboard', 'peakDay')}</p>
+          <p className="mt-1 text-[11px] font-semibold text-muted">{t('dashboard', 'peakDay')}</p>
         </div>
         <div>
           <p className="text-lg font-extrabold leading-none">{previousTotal}</p>
-          <p className="mt-1 text-[11px] font-semibold text-white/65">{t('dashboard', 'lastWeek')}</p>
+          <p className="mt-1 text-[11px] font-semibold text-muted">{t('dashboard', 'lastWeek')}</p>
         </div>
       </div>
     </section>

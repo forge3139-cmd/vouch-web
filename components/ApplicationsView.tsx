@@ -306,7 +306,7 @@ function ApplicationCard({
       )}
 
       {accessLabel && (
-        <div className="mt-3 rounded-2xl bg-white/8 p-3 text-sm">
+        <div className="mt-3 rounded-2xl bg-black/4 p-3 text-sm">
           <p className={access.state === 'active' ? 'font-bold text-ink' : 'font-semibold text-neutral'}>{accessLabel}</p>
           {access.grantedAt && (
             <p className="mt-1 text-xs text-muted">{t('applied', 'accessSharedOn', { date: fmt(access.grantedAt) })}</p>

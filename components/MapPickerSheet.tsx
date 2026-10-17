@@ -45,7 +45,7 @@ export default function MapPickerSheet({
         <div className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-card-border" />
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-bold text-ink">{t('request', 'mapSheetTitle')}</p>
-          <button type="button" onClick={onClose} className="text-sm font-bold text-orange">
+          <button type="button" onClick={onClose} className="text-sm font-bold text-blue">
             {t('request', 'mapSheetDone')}
           </button>
         </div>

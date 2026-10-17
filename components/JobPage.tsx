@@ -134,10 +134,10 @@ function JobInner({
           <Badge variant="onHero" size="sm">
             {closed ? t('job', 'closedTitle') : t('job', 'pill')}
           </Badge>
-          <h1 className="mt-4 text-2xl leading-tight font-extrabold text-white sm:text-3xl">{job.title}</h1>
-          <p className="mt-1 text-base font-semibold text-white/90">{job.company_name}</p>
+          <h1 className="mt-4 text-2xl leading-tight font-extrabold text-ink sm:text-3xl">{job.title}</h1>
+          <p className="mt-1 text-base font-semibold text-ink/75">{job.company_name}</p>
 
-          <ul className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-white">
+          <ul className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-ink">
             <li className="pill pill-on-hero gap-1.5 px-3 py-1.5">
               <PinIcon />
               {job.location}

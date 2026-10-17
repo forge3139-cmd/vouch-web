@@ -259,7 +259,7 @@ export default function AssessmentView({
           ‹ Back to your applications
         </Link>
         {!submitted && (
-          <span className={`text-sm font-bold tabular-nums ${elapsedSeconds > SUGGESTED_SECONDS ? 'text-orange' : 'text-muted'}`}>
+          <span className={`text-sm font-bold tabular-nums ${elapsedSeconds > SUGGESTED_SECONDS ? 'text-ink' : 'text-muted'}`}>
             {formatDuration(elapsedSeconds)}
           </span>
         )}

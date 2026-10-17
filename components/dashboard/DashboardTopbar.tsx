@@ -51,7 +51,7 @@ export default function DashboardTopbar({
             <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
           </svg>
           {unreadCount > 0 && (
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-[#023859] bg-orange" aria-hidden="true" />
+            <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-orange" aria-hidden="true" />
           )}
         </a>
       </div>
