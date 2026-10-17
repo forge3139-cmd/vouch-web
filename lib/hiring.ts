@@ -30,6 +30,7 @@ export interface PublicJob {
   salary_currency: string
   deadline: string
   status: JobStatus
+  created_at: string
 }
 
 export const EMPLOYMENT_LABEL_KEYS = {
@@ -50,15 +51,6 @@ export const AVAILABILITY_OPTIONS = [
 ] as const
 
 export const AVAILABILITY_VALUES: readonly string[] = AVAILABILITY_OPTIONS.map((o) => o.value)
-
-export const STATUS_LABEL_KEYS = {
-  new: 'statusNew',
-  reviewed: 'statusReviewed',
-  shortlisted: 'statusShortlisted',
-  interviewing: 'statusInterviewing',
-  hired: 'statusHired',
-  not_selected: 'statusNotSelected',
-} as const
 
 /** The forward path, in order. "Not selected" is an outcome, not a stage. */
 export const STATUS_STEPS: ApplicationStatus[] = ['new', 'reviewed', 'shortlisted', 'interviewing', 'hired']

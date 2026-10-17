@@ -2,17 +2,12 @@ import ApplicationsView from '@/components/ApplicationsView'
 import { getSignedInApplicant } from '@/lib/auth/session'
 import { loadMyApplications } from '@/lib/myApplications'
 import { loadRecommendedJobs } from '@/lib/recommendedJobs'
-import { loadNotifications } from '@/lib/notifications'
 import { getMyPendingAssessmentsAction } from '@/lib/assessmentActions'
 import { previewPassportAction } from '@/lib/passportActions'
-import { computeWeeklyActivity } from '@/lib/weeklyActivity'
 
 export const dynamic = 'force-dynamic'
 
-// Display shows a handful; the new-jobs count looks a bit further back so
-// it doesn't undercount just because the list itself is short.
-const RECOMMENDED_DISPLAY_LIMIT = 6
-const RECOMMENDED_FETCH_LIMIT = 20
+const RECOMMENDED_FETCH_LIMIT = 6
 
 export default async function ApplicationsPage({
   searchParams,
@@ -30,9 +25,6 @@ export default async function ApplicationsPage({
         items={[]}
         loadFailed={false}
         recommended={[]}
-        hasExpertise={false}
-        newJobsCount={0}
-        notifications={[]}
         pendingAssessments={[]}
         initialAuthError={initialAuthError}
       />
@@ -42,41 +34,21 @@ export default async function ApplicationsPage({
   const hasExpertise = applicant.expertise.length > 0
   // Only look for possibly-relevant jobs if there's expertise to compare;
   // the function returns nothing without it anyway.
-  const [items, recommended, notifications, pendingAssessments, passport] = await Promise.all([
+  const [items, recommended, pendingAssessments, passport] = await Promise.all([
     loadMyApplications(applicant.identityId),
     hasExpertise ? loadRecommendedJobs(RECOMMENDED_FETCH_LIMIT) : Promise.resolve([]),
-    loadNotifications(),
     getMyPendingAssessmentsAction(),
     previewPassportAction(),
   ])
 
-  // Computed from the OLD jobs_last_seen_at, read moments ago as part of
-  // the session — this reflects what's new for THIS visit. The client
-  // marks the visit seen afterwards (see ApplicationsView), which is what
-  // makes next visit's count smaller.
-  const since = applicant.jobsLastSeenAt ?? '1970-01-01T00:00:00Z'
-  const newJobsCount = applicant.jobAlertsEnabled
-    ? (recommended ?? []).filter((j) => j.createdAt > since).length
-    : 0
-
-  const liveItems = items ?? []
-  const weeklyActivity = computeWeeklyActivity(liveItems.filter((i) => !i.withdrawn).map((i) => i.appliedAt))
-
   return (
     <ApplicationsView
       signedIn
-      name={applicant.name}
-      slug={applicant.slug}
-      items={liveItems}
+      items={items ?? []}
       loadFailed={items === null}
-      recommended={recommended ? recommended.slice(0, RECOMMENDED_DISPLAY_LIMIT) : null}
-      hasExpertise={hasExpertise}
-      newJobsCount={newJobsCount}
-      notifications={notifications ?? []}
+      recommended={recommended}
       pendingAssessments={pendingAssessments}
       evidence={passport.ok ? passport.preview.evidence : null}
-      confirmedWork={passport.ok ? passport.preview.confirmedWork : []}
-      weeklyActivity={weeklyActivity}
     />
   )
 }

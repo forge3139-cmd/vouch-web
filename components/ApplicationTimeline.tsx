@@ -5,7 +5,7 @@ import { STATUS_STEPS, type ApplicationStatus } from '@/lib/hiring'
 
 type RowState = 'done' | 'current' | 'upcoming' | 'ended'
 
-const STAGE_KEYS = {
+export const STAGE_KEYS = {
   new: 'timelineNew',
   reviewed: 'timelineReviewed',
   shortlisted: 'timelineShortlisted',
@@ -41,22 +41,49 @@ function buildRows(status: ApplicationStatus, stageReached: ApplicationStatus | 
 }
 
 /**
- * Read-only progress timeline for the applicant. Shape and tick carry the
- * meaning — a filled circle with a tick is done, a ringed dot is current, an
- * empty outline is not reached, a dark square with a cross is where it
- * ended — colour only reinforces that.
+ * The applicant's read-only progress timeline. Shape and tick carry the
+ * meaning — a filled circle with a tick is done, a numbered circle is
+ * current, an empty outline is not reached, a dark square with a cross is
+ * where it ended — colour only reinforces that. `horizontal` draws the
+ * same rows as a connected row of step circles (the dashboard's
+ * "Application activity" cards) instead of a vertical list.
  */
 export default function ApplicationTimeline({
   status,
   stageReached,
   reason,
+  horizontal = false,
 }: {
   status: ApplicationStatus
   stageReached: ApplicationStatus | null
   reason: string | null
+  horizontal?: boolean
 }) {
   const t = useT()
   const rows = buildRows(status, stageReached)
+
+  if (horizontal) {
+    return (
+      <ol className="mt-4 flex items-start" aria-label={t('applied', 'timelineLabel')}>
+        {rows.map((row, i) => {
+          const last = i === rows.length - 1
+          const label = row.stage === 'not_selected' ? t('applied', 'timelineNotSelected') : t('applied', STAGE_KEYS[row.stage])
+          const lineTone = row.state === 'done' ? 'bg-orange' : 'bg-card-border'
+          return (
+            <li key={row.key} className={`flex flex-col items-center gap-1.5 ${last ? '' : 'flex-1'}`}>
+              <div className="flex w-full items-center">
+                <Node state={row.state} step={i + 1} />
+                {!last && <span aria-hidden="true" className={`mx-1 h-[2px] flex-1 rounded-full ${lineTone}`} />}
+              </div>
+              <span className={`text-center text-[10.5px] font-semibold leading-tight ${row.state === 'upcoming' ? 'text-faint' : 'text-muted'}`}>
+                {label}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    )
+  }
 
   return (
     <ol className="mt-4" aria-label={t('applied', 'timelineLabel')}>
@@ -106,10 +133,10 @@ export default function ApplicationTimeline({
   )
 }
 
-function Node({ state }: { state: RowState }) {
+function Node({ state, step }: { state: RowState; step?: number }) {
   if (state === 'done') {
     return (
-      <span aria-hidden="true" className="flex h-6 w-6 items-center justify-center rounded-full bg-orange text-[#011c40]">
+      <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange text-ink">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 12.5l4.5 4.5L19 7.5" />
         </svg>
@@ -117,20 +144,30 @@ function Node({ state }: { state: RowState }) {
     )
   }
   if (state === 'current') {
-    return (
-      <span aria-hidden="true" className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-orange p-[3px]">
+    return step != null ? (
+      <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange text-[11px] font-extrabold text-ink">
+        {step}
+      </span>
+    ) : (
+      <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-orange p-[3px]">
         <span className="block h-full w-full rounded-full bg-orange" />
       </span>
     )
   }
   if (state === 'ended') {
     return (
-      <span aria-hidden="true" className="flex h-6 w-6 items-center justify-center rounded-md bg-neutral text-white">
+      <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-neutral text-white">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
           <path d="M6 6l12 12M18 6L6 18" />
         </svg>
       </span>
     )
   }
-  return <span aria-hidden="true" className="block h-6 w-6 rounded-full border-2 border-card-border" />
+  return step != null ? (
+    <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-card-border text-[11px] font-bold text-faint">
+      {step}
+    </span>
+  ) : (
+    <span aria-hidden="true" className="block h-6 w-6 shrink-0 rounded-full border-2 border-card-border" />
+  )
 }

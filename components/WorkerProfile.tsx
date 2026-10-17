@@ -6,25 +6,12 @@ import WorkRequestFlow from '@/components/WorkRequestFlow'
 import PhotoLightbox from '@/components/PhotoLightbox'
 import Badge from '@/components/ui/Badge'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
+import { formatRelative } from '@/lib/formatRelative'
 import type { ConfirmedWorkItem, WorkerProfileBundle } from '@/lib/workerProfile'
 
 function formatMonthYear(iso: string | null, lang: 'en' | 'sw'): string | null {
   if (!iso) return null
   return new Date(iso).toLocaleDateString(lang === 'sw' ? 'sw-TZ' : 'en-US', { month: 'long', year: 'numeric' })
-}
-
-function formatRelative(iso: string, lang: 'en' | 'sw', t: ReturnType<typeof useT>): string {
-  const diffMs = Math.max(0, Date.now() - new Date(iso).getTime())
-  const day = 24 * 60 * 60 * 1000
-  const days = Math.floor(diffMs / day)
-  if (days < 1) return t('profile', 'today')
-  if (days === 1) return t('profile', 'dayAgo')
-  if (days < 30) return t('profile', 'daysAgo', { count: days })
-  const months = Math.floor(days / 30)
-  if (months === 1) return t('profile', 'monthAgo')
-  if (months < 12) return t('profile', 'monthsAgo', { count: months })
-  const years = Math.floor(months / 12)
-  return years === 1 ? t('profile', 'yearAgo') : t('profile', 'yearsAgo', { count: years })
 }
 
 export default function WorkerProfile({ bundle, slug }: { bundle: WorkerProfileBundle; slug: string }) {
@@ -192,7 +179,7 @@ function ProfileInner({ bundle, slug }: { bundle: WorkerProfileBundle; slug: str
               />
               <RecordRow
                 label={t('profile', 'lastConfirmed')}
-                value={hasWork && evidence?.last_confirmed_at ? formatRelative(evidence.last_confirmed_at, lang, t) : '—'}
+                value={hasWork && evidence?.last_confirmed_at ? formatRelative(evidence.last_confirmed_at, t) : '—'}
               />
               <RecordRow
                 label={t('profile', 'ratedFourPlus')}

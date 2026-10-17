@@ -1,6 +1,25 @@
 'use server'
 
 import { createAuthClient } from './auth/client'
+import { getSignedInApplicant } from './auth/session'
+
+/** Just the count, for the topbar bell — cheap enough to call on every
+ * page, unlike loading the full notifications list. Signed-out visitors
+ * never reach the query. */
+export async function getUnreadNotificationCountAction(): Promise<number> {
+  const applicant = await getSignedInApplicant()
+  if (!applicant) return 0
+  const supabase = await createAuthClient()
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .is('read_at', null)
+  if (error) {
+    console.error('[getUnreadNotificationCountAction] query failed', error)
+    return 0
+  }
+  return count ?? 0
+}
 
 /** Marking read is the one write a person may make to their own
  * notifications (RLS: notifications_own_mark_read) — done through the

@@ -1,30 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useLanguage, useT } from '@/components/LanguageContext'
+import { useT } from '@/components/LanguageContext'
 import AuthPanel from '@/components/job/AuthPanel'
 import type { AuthErrorCode } from '@/lib/auth/authActions'
 import { withdrawApplicationAction } from '@/lib/passportActions'
-import { markJobsSeenAction } from '@/lib/jobAlertsActions'
-import { markNotificationReadAction } from '@/lib/notificationActions'
-import { EMPLOYMENT_LABEL_KEYS } from '@/lib/hiring'
-import ApplicationTimeline from '@/components/ApplicationTimeline'
-import DashboardTopbar from '@/components/dashboard/DashboardTopbar'
+import { formatRelative } from '@/lib/formatRelative'
+import ApplicationTimeline, { STAGE_KEYS } from '@/components/ApplicationTimeline'
 import StatTiles from '@/components/dashboard/StatTiles'
-import WeeklyActivityChart from '@/components/dashboard/WeeklyActivityChart'
-import QuickActionsRow from '@/components/dashboard/QuickActionsRow'
-import ActiveApplicationsStrip from '@/components/dashboard/ActiveApplicationsStrip'
-import UpcomingCard from '@/components/dashboard/UpcomingCard'
-import RecentConfirmationsCard from '@/components/dashboard/RecentConfirmationsCard'
-import ShareProfileCard from '@/components/dashboard/ShareProfileCard'
 import type { MyApplication } from '@/lib/myApplications'
 import type { RecommendedJob } from '@/lib/recommendedJobs'
-import type { AppNotification } from '@/lib/notifications'
 import type { PendingAssessment } from '@/lib/assessments'
-import type { PassportPreview, PassportConfirmedWork } from '@/lib/passport'
-import type { WeeklyActivity } from '@/lib/weeklyActivity'
+import type { PassportPreview } from '@/lib/passport'
 
 export interface ApplicationsViewProps {
   signedIn: boolean
@@ -32,78 +21,26 @@ export interface ApplicationsViewProps {
   loadFailed: boolean
   /** Null = the lookup failed; [] = genuinely none. */
   recommended: RecommendedJob[] | null
-  hasExpertise: boolean
-  /** Worked out from the OLD jobs_last_seen_at, before this visit marks it seen. */
-  newJobsCount: number
-  notifications: AppNotification[]
   /** Invited, not yet submitted — drops off this list on its own once sent. */
   pendingAssessments: PendingAssessment[]
   /** Set right after a failed Google round trip. */
   initialAuthError?: AuthErrorCode | null
-  /** Everything below is signed-in only — the dashboard shell. */
-  name?: string
-  slug?: string | null
+  /** Signed-in only — the dashboard shell. */
   evidence?: PassportPreview['evidence'] | null
-  confirmedWork?: PassportConfirmedWork[]
-  weeklyActivity?: WeeklyActivity
 }
 
 export default function ApplicationsView(props: ApplicationsViewProps) {
   return <ApplicationsInner {...props} />
 }
 
-const ACCENTS = ['orange', 'blue', 'green'] as const
-
 function ApplicationsInner({
-  signedIn, items, loadFailed, recommended, hasExpertise, newJobsCount, notifications, pendingAssessments,
-  initialAuthError = null, name = '', slug = null, evidence = null, confirmedWork = [], weeklyActivity,
+  signedIn, items, loadFailed, recommended, pendingAssessments,
+  initialAuthError = null, evidence = null,
 }: ApplicationsViewProps) {
-  const { lang } = useLanguage()
   const t = useT()
   const router = useRouter()
-  const [notifs, setNotifs] = useState(notifications)
-  const [highlightId, setHighlightId] = useState<string | null>(null)
 
-  // This visit already read the count above from the OLD last-seen time;
-  // bumping it now (fire-and-forget) is what makes the NEXT visit's count
-  // smaller rather than showing the same jobs as "new" forever.
-  useEffect(() => {
-    if (signedIn) markJobsSeenAction().catch(() => {})
-  }, [signedIn])
-
-  function openNotification(n: AppNotification) {
-    if (!n.read_at) {
-      setNotifs((current) => current.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)))
-      markNotificationReadAction(n.id).catch(() => {})
-    }
-    const applicationId = n.data.application_id
-    if (!applicationId) return
-    if (n.type === 'assessment_invited') {
-      router.push(`/applications/assessment/${applicationId}`)
-      return
-    }
-    setHighlightId(applicationId)
-    // The element already exists in the DOM (it's below on this same page) —
-    // no navigation needed, just bring it into view and mark it.
-    requestAnimationFrame(() => {
-      document.getElementById(`app-${applicationId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    })
-    setTimeout(() => setHighlightId((current) => (current === applicationId ? null : current)), 2500)
-  }
-
-  const dateLocale = lang === 'sw' ? 'sw-TZ' : 'en-GB'
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString(dateLocale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'Africa/Dar_es_Salaam',
-    })
-
-  const activeAccess = items.filter((i) => i.access.state === 'active')
-  const interviewing = items.filter((i) => !i.withdrawn && i.status === 'interviewing')
-  const inProgress = items.filter((i) => !i.withdrawn && i.status !== 'hired' && i.status !== 'not_selected')
-  const unreadNotifs = notifs.filter((n) => !n.read_at)
+  const fmt = (iso: string) => formatRelative(iso, t)
 
   if (!signedIn) {
     return (
@@ -124,84 +61,37 @@ function ApplicationsInner({
     )
   }
 
+  const assessment = pendingAssessments[0] ?? null
+  const job = recommended?.[0] ?? null
+
   return (
-    <div className="p-5 sm:p-8">
-      <DashboardTopbar name={name} unreadCount={unreadNotifs.length} />
+    <div className="page-container flex-1 py-8 sm:py-10">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold tracking-wide text-muted">{t('dashboard', 'eyebrow')}</p>
+          <h1 className="mt-1 text-3xl font-extrabold text-ink sm:text-4xl">{t('nav', 'myApplications')}</h1>
+        </div>
+        <Link href="/jobs" className="btn btn-dark tap px-5 py-2.5 text-sm">
+          {t('dashboard', 'actionFindJobs')} <span aria-hidden="true">→</span>
+        </Link>
+      </div>
 
       {loadFailed ? (
-        <p role="alert" className="text-sm font-semibold text-red-400">
+        <p role="alert" className="mt-6 text-sm font-semibold text-red-400">
           {t('applied', 'loadError')}
         </p>
       ) : (
         <>
-          <StatTiles
-            recordsConfirmed={evidence?.recordsConfirmed ?? 0}
-            distinctConfirmers={evidence?.distinctConfirmers ?? 0}
-            repeatClients={evidence?.repeatClients ?? 0}
-            applicationsSent={items.filter((i) => !i.withdrawn).length}
-          />
-
-          <div className="mt-5 flex flex-wrap items-start gap-5">
-            {/* Main column: a narrow stack beside the week's chart, then
-             * full-width rows below — same rhythm as a typical dashboard
-             * (small actions beside the headline chart, lists spanning
-             * full width underneath), just built from VOUCH's own glass
-             * cards instead of solid colour panels. */}
-            <div className="min-w-0 flex-[2] basis-[420px]">
-              <div className="flex flex-wrap items-start gap-5">
-                <div className="flex min-w-0 flex-1 basis-[200px] flex-col gap-4">
-                  <QuickActionsRow />
-                </div>
-                <div className="min-w-0 flex-[2] basis-[320px]">
-                  {weeklyActivity && (
-                    <WeeklyActivityChart
-                      days={weeklyActivity.days}
-                      total={weeklyActivity.total}
-                      previousTotal={weeklyActivity.previousTotal}
-                      dateLocale={dateLocale}
-                    />
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-5">
-                <ActiveApplicationsStrip items={inProgress} />
-              </div>
-
-              <div className="mt-5">
-                <RecentConfirmationsCard confirmedWork={confirmedWork} fmt={fmt} />
-              </div>
-            </div>
-
-            {/* Right column: a narrower, persistent sidebar of its own. */}
-            <div className="flex min-w-0 flex-1 basis-[260px] flex-col gap-5">
-              <UpcomingCard pendingAssessments={pendingAssessments} interviewing={interviewing} />
-              {slug && <ShareProfileCard slug={slug} />}
-            </div>
+          <div className="mt-6">
+            <StatTiles
+              recordsConfirmed={evidence?.recordsConfirmed ?? 0}
+              distinctConfirmers={evidence?.distinctConfirmers ?? 0}
+              repeatClients={evidence?.repeatClients ?? 0}
+              applicationsSent={items.filter((i) => !i.withdrawn).length}
+            />
           </div>
 
-          <NotificationsBanner notifications={unreadNotifs} onOpen={openNotification} />
-
-          {/* Who can see the passport right now. */}
-          <section className="glass mt-6 p-card" aria-labelledby="access-heading">
-            <h2 id="access-heading" className="text-sm font-extrabold text-ink">
-              {t('applied', 'accessTitle')}
-            </h2>
-            {activeAccess.length === 0 ? (
-              <p className="mt-2 text-sm text-muted">{t('applied', 'accessNone')}</p>
-            ) : (
-              <ul className="mt-3 space-y-2">
-                {activeAccess.map((item) => (
-                  <li key={item.id} className="text-sm text-ink">
-                    <span className="font-bold">{item.companyName}</span>
-                    <span className="text-muted"> · {item.jobTitle}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <h2 className="mt-8 text-lg font-extrabold text-ink">{t('dashboard', 'yourApplications')}</h2>
+          <h2 className="mt-8 text-lg font-extrabold text-ink">{t('dashboard', 'activityTitle')}</h2>
 
           {items.length === 0 ? (
             <div className="glass mt-4 p-card text-center">
@@ -210,20 +100,51 @@ function ApplicationsInner({
             </div>
           ) : (
             <ul className="mt-4 space-y-3">
-              {items.map((item, i) => (
+              {items.map((item) => (
                 <ApplicationCard
                   key={item.id}
                   item={item}
-                  accent={ACCENTS[i % 3]}
                   fmt={fmt}
-                  highlighted={highlightId === item.id}
                   pendingAssessment={pendingAssessments.some((p) => p.applicationId === item.id)}
                 />
               ))}
             </ul>
           )}
 
-          <Recommendations recommended={recommended} hasExpertise={hasExpertise} newJobsCount={newJobsCount} />
+          {(assessment || job) && (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {assessment && (
+                <div className="rounded-[var(--radius-card)] bg-ink p-5">
+                  <div className="flex items-center gap-2">
+                    <BellIcon />
+                    <span className="rounded-pill bg-orange px-2.5 py-0.5 text-[10.5px] font-bold text-ink">
+                      {t('dashboard', 'newBadge')}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-base font-extrabold text-white">{t('dashboard', 'assessmentPending')}</p>
+                  <p className="mt-1 text-sm text-white/60">
+                    {t('dashboard', 'assessmentInviteBody', { company: assessment.companyName })}
+                  </p>
+                  <Link
+                    href={`/applications/assessment/${assessment.applicationId}`}
+                    className="tap mt-4 inline-flex items-center gap-1.5 rounded-pill bg-dash-peach px-4 py-2 text-xs font-bold text-[#5b3418]"
+                  >
+                    {t('dashboard', 'viewInvitation')} <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              )}
+              {job && (
+                <div className="rounded-[var(--radius-card)] bg-dash-navy-mid p-5">
+                  <p className="text-[11px] font-bold tracking-wide text-dash-navy">{t('dashboard', 'mightSuit')}</p>
+                  <p className="mt-2 text-base font-extrabold text-ink">{job.title}</p>
+                  <p className="mt-0.5 text-sm text-ink/60">{job.companyName} · {job.location}</p>
+                  <Link href={`/j/${job.slug}`} className="link-hover tap mt-3 inline-flex items-center gap-1 text-sm font-extrabold text-ink">
+                    {t('dashboard', 'seeJob')} <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -232,15 +153,11 @@ function ApplicationsInner({
 
 function ApplicationCard({
   item,
-  accent,
   fmt,
-  highlighted = false,
   pendingAssessment = false,
 }: {
   item: MyApplication
-  accent: 'orange' | 'blue' | 'green'
   fmt: (iso: string) => string
-  highlighted?: boolean
   pendingAssessment?: boolean
 }) {
   const t = useT()
@@ -265,60 +182,30 @@ function ApplicationCard({
     setPending(false)
   }
 
-  const { access } = item
-  const accessLabel =
-    access.state === 'active'
-      ? t('applied', 'accessActive')
-      : access.state === 'job_closed'
-        ? t('applied', 'accessJobClosed')
-        : access.state === 'withdrawn'
-          ? t('applied', 'accessWithdrawn')
-          : null
+  const badgeKey = item.status === 'not_selected' ? 'timelineNotSelected' : STAGE_KEYS[item.status]
 
   return (
-    <li
-      id={`app-${item.id}`}
-      className={`glass-solid accent-bar accent-${accent} p-card transition-shadow ${item.withdrawn ? 'opacity-70' : ''} ${
-        highlighted ? 'ring-2 ring-orange' : ''
-      }`}
-    >
-      <p className="text-base font-extrabold text-ink">{item.jobTitle}</p>
-      <p className="text-sm text-muted">{item.companyName}</p>
-      <p className="mt-2 text-xs font-semibold text-neutral">{t('applied', 'appliedOn', { date: fmt(item.appliedAt) })}</p>
+    <li className={`glass-solid p-5 ${item.withdrawn ? 'opacity-60' : ''}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-base font-extrabold text-ink">{item.jobTitle}</p>
+          <p className="mt-0.5 truncate text-sm text-muted">{item.companyName} · {fmt(item.appliedAt)}</p>
+        </div>
+        <span className="shrink-0 rounded-pill bg-dash-peach px-3 py-1 text-[11px] font-bold text-[#5b3418]">
+          {item.withdrawn ? t('applied', 'statusWithdrawn') : t('applied', badgeKey)}
+        </span>
+      </div>
 
-      {item.withdrawn ? (
-        <p className="mt-3 inline-flex items-center gap-2 rounded-pill bg-card-border px-3 py-1.5 text-sm font-bold text-neutral">
-          <span aria-hidden="true">–</span>
-          {t('applied', 'statusWithdrawn')}
-        </p>
-      ) : (
-        <ApplicationTimeline status={item.status} stageReached={item.stageReached} reason={item.notSelectedReason} />
-      )}
+      {!item.withdrawn && <ApplicationTimeline status={item.status} stageReached={item.stageReached} reason={item.notSelectedReason} horizontal />}
 
       {pendingAssessment && (
         <Link
           href={`/applications/assessment/${item.id}`}
           className="tap mt-3 flex items-center gap-2 rounded-2xl bg-blue-light px-3 py-2.5 text-xs font-bold text-blue"
         >
-          You’ve been invited to a short assessment — under 15 minutes
+          {t('dashboard', 'assessmentInviteShort')}
           <span aria-hidden="true">›</span>
         </Link>
-      )}
-
-      {accessLabel && (
-        <div className="mt-3 rounded-2xl bg-black/4 p-3 text-sm">
-          <p className={access.state === 'active' ? 'font-bold text-ink' : 'font-semibold text-neutral'}>{accessLabel}</p>
-          {access.grantedAt && (
-            <p className="mt-1 text-xs text-muted">{t('applied', 'accessSharedOn', { date: fmt(access.grantedAt) })}</p>
-          )}
-          <p className="mt-0.5 text-xs text-muted">
-            {access.views === 0
-              ? t('applied', 'accessNotViewed')
-              : `${access.views === 1 ? t('applied', 'accessViewsOne') : t('applied', 'accessViews', { count: access.views })}${
-                  access.lastViewedAt ? ` · ${t('applied', 'accessLastViewed', { date: fmt(access.lastViewedAt) })}` : ''
-                }`}
-          </p>
-        </div>
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1">
@@ -326,11 +213,7 @@ function ApplicationCard({
           {t('applied', 'viewJob')} ›
         </Link>
         {!item.withdrawn && !confirming && (
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            className="link-hover tap text-xs font-bold text-neutral"
-          >
+          <button type="button" onClick={() => setConfirming(true)} className="link-hover tap text-xs font-bold text-neutral">
             {t('applied', 'withdraw')}
           </button>
         )}
@@ -368,118 +251,11 @@ function ApplicationCard({
   )
 }
 
-/** Open jobs that share wording with the expertise on the person's profile — might be relevant, never a judgement. */
-function notificationTimeAgo(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (mins < 1) return 'now'
-  if (mins < 60) return `${mins}m`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h`
-  return `${Math.floor(hours / 24)}d`
-}
-
-/** Unread notifications sit at the top of this page — that's the whole
- * "how does an applicant learn their status" loop on the web. Tapping one
- * marks it read and scrolls to the application it's about, already lower
- * on this same page. Renders nothing once there's nothing unread. */
-function NotificationsBanner({ notifications, onOpen }: { notifications: AppNotification[]; onOpen: (n: AppNotification) => void }) {
-  const t = useT()
-  if (notifications.length === 0) return null
-
-  return (
-    <section className="mt-6" aria-labelledby="notif-heading">
-      <h2 id="notif-heading" className="text-sm font-extrabold text-ink">
-        {t('applied', 'notifTitle')}
-      </h2>
-      <ul className="mt-3 space-y-2">
-        {notifications.map((n) => (
-          <li key={n.id}>
-            <button
-              type="button"
-              onClick={() => onOpen(n)}
-              className="glass tap flex w-full items-start gap-3 p-card text-left"
-            >
-              <span className="icon-circle icon-circle-orange h-9 w-9 shrink-0">
-                <BellIcon />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold text-ink">{n.title}</span>
-                <span className="mt-0.5 block text-sm text-neutral">{n.body}</span>
-              </span>
-              <span className="shrink-0 text-xs text-muted">{notificationTimeAgo(n.created_at)}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
-}
-
 function BellIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/70">
       <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
-  )
-}
-
-function Recommendations({
-  recommended, hasExpertise, newJobsCount,
-}: {
-  recommended: RecommendedJob[] | null
-  hasExpertise: boolean
-  newJobsCount: number
-}) {
-  const { lang } = useLanguage()
-  const t = useT()
-
-  return (
-    <section className="mt-8" aria-labelledby="rec-heading">
-      <div className="flex items-center gap-2.5">
-        <h2 id="rec-heading" className="text-lg font-extrabold text-ink">
-          {t('applied', 'recTitle')}
-        </h2>
-        {newJobsCount > 0 && (
-          <span className="rounded-pill bg-orange px-2.5 py-1 text-xs font-bold text-[#011c40]">
-            {t('applied', 'recNew', { count: newJobsCount })}
-          </span>
-        )}
-      </div>
-
-      {!hasExpertise ? (
-        <p className="glass mt-3 p-card text-sm text-muted">{t('applied', 'recNoExpertise')}</p>
-      ) : recommended === null ? (
-        <p role="alert" className="mt-3 text-sm font-semibold text-red-400">
-          {t('applied', 'loadError')}
-        </p>
-      ) : recommended.length === 0 ? (
-        <p className="glass mt-3 p-card text-sm text-muted">{t('applied', 'recEmpty')}</p>
-      ) : (
-        <ul className="mt-3 space-y-3">
-          {recommended.map((job) => (
-            <li key={job.slug} className="glass-solid lift p-card">
-              <p className="text-base font-extrabold text-ink">{job.title}</p>
-              <p className="text-sm text-muted">
-                {job.companyName} · {job.location}
-              </p>
-              <p className="mt-1 text-xs font-semibold text-neutral">
-                {t('job', EMPLOYMENT_LABEL_KEYS[job.employmentType])} ·{' '}
-                {t('job', 'applyBy', {
-                  date: new Date(`${job.deadline}T12:00:00Z`).toLocaleDateString(lang === 'sw' ? 'sw-TZ' : 'en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    timeZone: 'UTC',
-                  }),
-                })}
-              </p>
-              <Link href={`/j/${job.slug}`} className="btn btn-dark tap mt-3 px-5 py-2 text-xs">
-                {t('applied', 'recView')}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
   )
 }

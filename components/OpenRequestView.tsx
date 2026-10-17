@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useT } from '@/components/LanguageContext'
 import Button from '@/components/ui/Button'
 import RadioPills from '@/components/ui/RadioPills'
@@ -80,39 +81,174 @@ export default function OpenRequestView({
     return <OpenRequestDetailPanel id={detailId} onBack={() => setView('list')} />
   }
 
+  const [featured, ...older] = myItems
+
   return (
-    <div className="form-shell">
-      <div className="mt-6 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-extrabold text-ink">{t('openRequest', 'myRequestsTitle')}</h1>
-        <button type="button" onClick={() => setView('form')} className="link-hover tap text-sm font-bold text-blue">
-          {t('openRequest', 'newRequest')}
+    <div className="page-container flex-1 py-8 sm:py-10">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold tracking-wide text-muted">{t('openRequest', 'eyebrow')}</p>
+          <h1 className="mt-1 text-3xl font-extrabold text-ink sm:text-4xl">{t('openRequest', 'myRequestsTitle')}</h1>
+        </div>
+        <button type="button" onClick={() => setView('form')} className="btn btn-dark tap px-5 py-2.5 text-sm">
+          {t('openRequest', 'newRequest')} <span aria-hidden="true">→</span>
         </button>
       </div>
 
       {loadFailed ? (
         <p role="alert" className="mt-6 text-sm font-semibold text-red-400">{t('openRequest', 'errGeneric')}</p>
-      ) : myItems.length === 0 ? (
-        <p className="mt-6 text-sm text-muted">{t('openRequest', 'myRequestsEmpty')}</p>
+      ) : !featured ? (
+        <div className="glass mt-6 p-card text-center">
+          <p className="text-sm font-semibold text-ink">{t('openRequest', 'myRequestsEmpty')}</p>
+        </div>
       ) : (
-        <ul className="mt-4 space-y-3">
-          {myItems.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  setDetailId(item.id)
-                  setView('detail')
-                }}
-                className="glass-solid lift tap w-full p-card text-left"
-              >
-                <p className="text-sm font-extrabold text-ink">{item.title || '…'}</p>
-                <p className="mt-1 text-xs font-semibold text-neutral">{t('openRequest', STATUS_KEYS[item.status] ?? 'statusOpen')}</p>
-              </button>
-            </li>
+        <FeaturedRequest
+          key={featured.id}
+          item={featured}
+          onViewOlder={(id) => {
+            setDetailId(id)
+            setView('detail')
+          }}
+          olderItems={older}
+        />
+      )}
+    </div>
+  )
+}
+
+function FeaturedRequest({
+  item,
+  olderItems,
+  onViewOlder,
+}: {
+  item: MyOpenRequestRow
+  olderItems: MyOpenRequestRow[]
+  onViewOlder: (id: string) => void
+}) {
+  const t = useT()
+  const [detail, setDetail] = useState<OpenRequestDetail | null>(null)
+  const [responses, setResponses] = useState<OpenRequestResponse[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    // No `setLoading(true)` here: the parent keys this component on
+    // `item.id`, so a different featured request remounts it fresh —
+    // `loading` already starts `true` from the initial state.
+    getOpenRequestAction(item.id).then((result) => {
+      if (cancelled) return
+      if (result.ok) {
+        setDetail(result.detail)
+        getOpenRequestResponsesAction(item.id).then((r) => {
+          if (!cancelled) setResponses(r ?? [])
+        })
+      }
+      setLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [item.id])
+
+  if (loading) {
+    return <div className="glass mt-6 p-card text-sm text-muted">{t('passport', 'loading')}</div>
+  }
+
+  return (
+    <div className="mt-6">
+      <RequestHeroCard
+        title={detail?.title || item.title || '…'}
+        subtitle={detail ? `${detail.expertise}${detail.location ? ` · ${detail.location}` : ''} · ${t('openRequest', 'responsesCount', { count: detail.response_count })}` : ''}
+        statusKey={STATUS_KEYS[item.status] ?? 'statusOpen'}
+      />
+
+      <h2 className="mt-8 text-lg font-extrabold text-ink">{t('openRequest', 'respondersTitle')}</h2>
+      {responses.length === 0 ? (
+        <p className="mt-3 text-sm text-muted">{t('openRequest', 'responsesEmpty')}</p>
+      ) : (
+        <ul className="mt-3 space-y-3">
+          {responses.map((r) => (
+            <ResponderRow key={r.response_id} response={r} />
           ))}
         </ul>
       )}
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-[var(--radius-card)] bg-orange p-5">
+          <p className="text-4xl font-extrabold leading-none text-ink">{detail?.response_count ?? 0}</p>
+          <p className="mt-2 text-sm font-semibold text-ink/70">{t('openRequest', 'peopleResponded')}</p>
+        </div>
+        <div className="rounded-[var(--radius-card)] bg-ink p-5">
+          <p className="text-[11px] font-bold tracking-wide text-orange">{t('openRequest', 'goodToKnowEyebrow')}</p>
+          <p className="mt-2 text-base font-extrabold text-white">{t('openRequest', 'goodToKnowTitle')}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-white/60">{t('openRequest', 'goodToKnowBody')}</p>
+        </div>
+      </div>
+
+      {olderItems.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-sm font-extrabold text-ink">{t('openRequest', 'olderRequests')}</h2>
+          <ul className="mt-3 space-y-2">
+            {olderItems.map((older) => (
+              <li key={older.id}>
+                <button
+                  type="button"
+                  onClick={() => onViewOlder(older.id)}
+                  className="glass-solid lift tap w-full p-card text-left"
+                >
+                  <p className="text-sm font-extrabold text-ink">{older.title || '…'}</p>
+                  <p className="mt-1 text-xs font-semibold text-neutral">{t('openRequest', STATUS_KEYS[older.status] ?? 'statusOpen')}</p>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
+  )
+}
+
+type StatusKey = (typeof STATUS_KEYS)[string]
+
+/** The black focal card for a single request — "Open request" / "Assigned"
+ * badge, title, and a one-line summary. Shared by the featured request on
+ * the list page and the detail panel for an older one. */
+function RequestHeroCard({ title, subtitle, statusKey }: { title: string; subtitle: string; statusKey: StatusKey }) {
+  const t = useT()
+  return (
+    <div className="rounded-[var(--radius-hero)] bg-ink p-6">
+      <span className="rounded-pill bg-orange px-3 py-1 text-[11px] font-bold text-ink">{t('openRequest', statusKey)}</span>
+      <p className="mt-4 text-2xl font-extrabold text-white">{title}</p>
+      {!!subtitle && <p className="mt-1.5 text-sm text-white/55">{subtitle}</p>}
+    </div>
+  )
+}
+
+/** One white row — an evidence-backed person who responded to the request. */
+function ResponderRow({ response }: { response: OpenRequestResponse }) {
+  const t = useT()
+  const initial = response.display_name.charAt(0).toUpperCase()
+  const hasWork = response.records_confirmed > 0
+
+  return (
+    <li className="glass-solid flex items-center gap-3 p-4">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-dash-navy-mid text-sm font-extrabold text-dash-navy">
+        {initial}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-extrabold text-ink">{response.display_name}</p>
+        <p className="truncate text-xs font-medium text-muted">
+          {hasWork
+            ? t('directory', 'evidenceCount', { records: response.records_confirmed, confirmers: response.distinct_confirmers })
+            : t('directory', 'newOnVouch')}
+        </p>
+      </div>
+      {response.slug ? (
+        <Link href={`/w/${response.slug}`} className="btn btn-glass tap shrink-0 px-4 py-2 text-xs">
+          {t('openRequest', 'viewRecord')}
+        </Link>
+      ) : null}
+    </li>
   )
 }
 
@@ -404,12 +540,10 @@ function OpenRequestDetailPanel({ id, onBack }: { id: string; onBack: () => void
   }
 
   return (
-    <div className="form-shell">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} className="link-hover tap text-sm font-bold text-neutral">
-          ‹ {t('openRequest', 'back')}
-        </button>
-      </div>
+    <div className="page-container flex-1 py-8 sm:py-10">
+      <button type="button" onClick={onBack} className="link-hover tap text-sm font-bold text-neutral">
+        ‹ {t('openRequest', 'back')}
+      </button>
 
       {loading ? (
         <p className="mt-8 text-sm text-muted">{t('passport', 'loading')}</p>
@@ -417,12 +551,14 @@ function OpenRequestDetailPanel({ id, onBack }: { id: string; onBack: () => void
         <p role="alert" className="mt-8 text-sm font-semibold text-red-400">{t('openRequest', 'errGeneric')}</p>
       ) : (
         <>
-          <h1 className="mt-6 text-2xl font-extrabold text-ink">{detail.title}</h1>
-          <p className="mt-1 text-sm text-muted">
-            {detail.expertise}{detail.location ? ` · ${detail.location}` : ''}
-          </p>
-          <p className="mt-1 text-sm text-muted">{detail.budget_text} · {detail.timing_text}</p>
-          {detail.description && <p className="mt-3 text-sm text-ink">{detail.description}</p>}
+          <div className="mt-6">
+            <RequestHeroCard
+              title={detail.title}
+              subtitle={`${detail.expertise}${detail.location ? ` · ${detail.location}` : ''} · ${detail.budget_text} · ${detail.timing_text}`}
+              statusKey={STATUS_KEYS[detail.status] ?? 'statusOpen'}
+            />
+          </div>
+          {!!detail.description && <p className="mt-4 text-sm leading-relaxed text-ink">{detail.description}</p>}
 
           {chosenName && (
             <p className="mt-4 rounded-card bg-green-tint p-4 text-sm font-semibold text-green">
@@ -430,7 +566,7 @@ function OpenRequestDetailPanel({ id, onBack }: { id: string; onBack: () => void
             </p>
           )}
 
-          <h2 className="mt-8 text-sm font-extrabold text-ink">{t('openRequest', 'responsesTitle')} · {responses.length}</h2>
+          <h2 className="mt-8 text-lg font-extrabold text-ink">{t('openRequest', 'respondersTitle')} · {responses.length}</h2>
           {responses.length === 0 ? (
             <p className="mt-3 text-sm text-muted">{t('openRequest', 'responsesEmpty')}</p>
           ) : (
@@ -442,10 +578,9 @@ function OpenRequestDetailPanel({ id, onBack }: { id: string; onBack: () => void
                     {r.price != null && <p className="text-sm font-bold text-blue">{r.price_currency} {r.price.toLocaleString()}</p>}
                   </div>
                   <p className="mt-1 text-xs text-muted">
-                    {t('openRequest', 'evidenceLine')
-                      .replace('{records}', String(r.records_confirmed))
-                      .replace('{people}', String(r.distinct_confirmers))
-                      .replace('{repeat}', String(r.repeat_clients))}
+                    {r.records_confirmed > 0
+                      ? t('directory', 'evidenceCount', { records: r.records_confirmed, confirmers: r.distinct_confirmers })
+                      : t('directory', 'newOnVouch')}
                   </p>
                   {r.note && <p className="mt-2 text-sm text-ink italic">“{r.note}”</p>}
                   {detail.status === 'open' && !chosenName && (
