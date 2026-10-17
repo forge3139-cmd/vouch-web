@@ -93,7 +93,7 @@ export default function QuestionsStep({
         />
       </div>
 
-      {state.error && <p className="mb-4 text-sm font-semibold text-red-600">{state.error}</p>}
+      {state.error && <p className="mb-4 text-sm font-semibold text-red-400">{state.error}</p>}
 
       <div className="flex-1">
         {subStep === 0 && (

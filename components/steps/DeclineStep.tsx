@@ -34,7 +34,7 @@ export default function DeclineStep({
       <h1 className="text-2xl font-extrabold text-ink">{t('decline', 'title')}</h1>
       <p className="mt-3 text-sm text-muted">{t('decline', 'body')}</p>
 
-      {state.error && <p className="mt-4 text-sm font-semibold text-red-600">{state.error}</p>}
+      {state.error && <p className="mt-4 text-sm font-semibold text-red-400">{state.error}</p>}
 
       <div className="mt-8">
         <label className="mb-2 block text-sm font-semibold text-ink">

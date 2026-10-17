@@ -80,7 +80,7 @@ export default function RequestContactStep({
 
         <p className="rounded-card bg-blue-light p-4 text-sm text-ink">{t('request', 'callNote')}</p>
 
-        {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+        {error && <p className="text-sm font-semibold text-red-400">{error}</p>}
       </div>
 
       <div className="mt-10 flex gap-3">

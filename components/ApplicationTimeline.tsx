@@ -109,7 +109,7 @@ export default function ApplicationTimeline({
 function Node({ state }: { state: RowState }) {
   if (state === 'done') {
     return (
-      <span aria-hidden="true" className="flex h-6 w-6 items-center justify-center rounded-full bg-orange text-white">
+      <span aria-hidden="true" className="flex h-6 w-6 items-center justify-center rounded-full bg-orange text-[#011c40]">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 12.5l4.5 4.5L19 7.5" />
         </svg>

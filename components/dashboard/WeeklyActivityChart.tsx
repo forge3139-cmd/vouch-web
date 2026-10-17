@@ -1,11 +1,11 @@
 import { useT } from '@/components/LanguageContext'
 import type { WeeklyActivityDay } from '@/lib/weeklyActivity'
 
-/** The dashboard's focal card — a solid navy fill, white chart on top,
- * the one bold-red bar marking the week's busiest day. Real weekly
- * application counts, never a fabricated trend line — the three footer
- * numbers are the same `days` array summarised three ways, not three
- * separate data sources. */
+/** The dashboard's focal card — glass, same as every other surface on
+ * the page, with one bright ice-blue bar marking the week's busiest
+ * day. Real weekly application counts, never a fabricated trend line —
+ * the three footer numbers are the same `days` array summarised three
+ * ways, not three separate data sources. */
 export default function WeeklyActivityChart({
   days,
   total,
@@ -34,10 +34,10 @@ export default function WeeklyActivityChart({
     : '—'
 
   return (
-    <section className="rounded-[var(--radius-hero)] bg-dash-navy p-6 text-white">
+    <section className="glass p-6 text-white">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-[15px] font-extrabold">{t('dashboard', 'weekActivity')}</h2>
-        <span className="rounded-pill bg-white/15 px-2.5 py-1 text-xs font-bold">{comparison}</span>
+        <span className="rounded-pill bg-white/10 px-2.5 py-1 text-xs font-bold">{comparison}</span>
       </div>
 
       <div className="mt-7 flex items-end gap-2.5 sm:gap-4" style={{ height: '120px' }}>
@@ -48,12 +48,12 @@ export default function WeeklyActivityChart({
           return (
             <div key={day.date} className="relative flex flex-1 flex-col items-center gap-2">
               {isPeak && (
-                <div className="absolute -top-7 whitespace-nowrap rounded-lg bg-dash-red px-2 py-1 text-[10.5px] font-bold text-white">
+                <div className="absolute -top-7 whitespace-nowrap rounded-lg bg-orange px-2 py-1 text-[10.5px] font-bold text-[#011c40]">
                   {t('dashboard', 'sentCount', { count: day.count })}
                 </div>
               )}
               <div
-                className={`w-full max-w-7 rounded-t-lg rounded-b-sm ${isPeak ? 'bg-dash-red' : 'bg-white/20'}`}
+                className={`w-full max-w-7 rounded-t-lg rounded-b-sm ${isPeak ? 'bg-orange' : 'bg-[#26658c]/40'}`}
                 style={{ height: `${heightPct}%` }}
               />
               <span className={`text-[11px] font-semibold ${isPeak ? 'text-white' : 'text-white/60'}`}>{label}</span>

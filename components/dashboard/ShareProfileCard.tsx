@@ -20,10 +20,10 @@ export default function ShareProfileCard({ slug }: { slug: string }) {
   }
 
   return (
-    <section className="rounded-[var(--radius-card)] bg-dash-navy-mid p-4 text-white">
+    <section className="glass p-4 text-white">
       <p className="text-[13px] font-extrabold">{t('dashboard', 'shareProfile')}</p>
-      <p className="mt-1 text-xs leading-relaxed text-white/75">{t('dashboard', 'shareProfileBody')}</p>
-      <button type="button" onClick={handleCopy} className="tap mt-3 w-full rounded-full bg-white py-2 text-xs font-bold text-dash-navy-mid">
+      <p className="mt-1 text-xs leading-relaxed text-white/60">{t('dashboard', 'shareProfileBody')}</p>
+      <button type="button" onClick={handleCopy} className="tap mt-3 w-full rounded-full bg-orange py-2 text-xs font-bold text-[#011c40]">
         {copied ? t('dashboard', 'linkCopied') : t('dashboard', 'copyLink')}
       </button>
     </section>

@@ -12,7 +12,7 @@ export default function LangToggle() {
           type="button"
           onClick={() => setLang(code)}
           aria-pressed={lang === code}
-          className={`tap rounded-pill px-3.5 py-1.5 ${lang === code ? 'bg-ink text-white' : 'text-muted'}`}
+          className={`tap rounded-pill px-3.5 py-1.5 ${lang === code ? 'bg-orange text-[#011c40]' : 'text-muted'}`}
         >
           {code.toUpperCase()}
         </button>

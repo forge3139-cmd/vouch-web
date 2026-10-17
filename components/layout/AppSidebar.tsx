@@ -156,7 +156,7 @@ export default function AppSidebar() {
                 href={link.href}
                 aria-current={active ? 'page' : undefined}
                 className={`tap flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm ${
-                  active ? 'bg-dash-navy font-bold text-white' : 'font-semibold text-ink/75 hover:bg-ink/5 hover:text-ink'
+                  active ? 'bg-orange font-bold text-[#011c40]' : 'font-semibold text-ink/70 hover:bg-ink/5 hover:text-ink'
                 }`}
               >
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -179,7 +179,7 @@ export default function AppSidebar() {
                   aria-expanded={profileOpen}
                   className="tap flex w-full items-center gap-2.5 rounded-2xl px-2 py-2 hover:bg-ink/5"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-dash-red text-sm font-bold text-white">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange text-sm font-bold text-[#011c40]">
                     {session.name.charAt(0).toUpperCase()}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-left text-sm font-bold text-ink">{session.name}</span>
@@ -188,7 +188,7 @@ export default function AppSidebar() {
                   </svg>
                 </button>
                 {profileOpen && (
-                  <div role="menu" className="absolute bottom-full left-0 z-40 mb-2 w-full rounded-2xl border border-card-border bg-white p-2 shadow-xl">
+                  <div role="menu" className="glass absolute bottom-full left-0 z-40 mb-2 w-full p-2">
                     {session.slug && (
                       <Link
                         href={`/w/${session.slug}`}

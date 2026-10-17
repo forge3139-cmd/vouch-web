@@ -153,7 +153,7 @@ export default function AuthPanel({
               setMode(m)
               setError(null)
             }}
-            className={`tap flex-1 rounded-pill px-4 py-2.5 ${mode === m ? 'bg-ink text-white' : 'text-muted'}`}
+            className={`tap flex-1 rounded-pill px-4 py-2.5 ${mode === m ? 'bg-orange text-[#011c40]' : 'text-muted'}`}
           >
             {t('auth', m === 'signin' ? 'tabSignIn' : 'tabCreate')}
           </button>
@@ -200,7 +200,7 @@ export default function AuthPanel({
         </fieldset>
 
         {error && (
-          <p role="alert" className={`text-sm font-semibold ${error === 'confirmEmail' ? 'text-neutral' : 'text-red-600'}`}>
+          <p role="alert" className={`text-sm font-semibold ${error === 'confirmEmail' ? 'text-neutral' : 'text-red-400'}`}>
             {t('auth', ERROR_KEYS[error])}
           </p>
         )}

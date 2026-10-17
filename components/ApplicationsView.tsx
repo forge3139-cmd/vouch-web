@@ -129,7 +129,7 @@ function ApplicationsInner({
       <DashboardTopbar name={name} unreadCount={unreadNotifs.length} />
 
       {loadFailed ? (
-        <p role="alert" className="text-sm font-semibold text-red-600">
+        <p role="alert" className="text-sm font-semibold text-red-400">
           {t('applied', 'loadError')}
         </p>
       ) : (
@@ -306,7 +306,7 @@ function ApplicationCard({
       )}
 
       {accessLabel && (
-        <div className="mt-3 rounded-2xl bg-white/60 p-3 text-sm">
+        <div className="mt-3 rounded-2xl bg-white/8 p-3 text-sm">
           <p className={access.state === 'active' ? 'font-bold text-ink' : 'font-semibold text-neutral'}>{accessLabel}</p>
           {access.grantedAt && (
             <p className="mt-1 text-xs text-muted">{t('applied', 'accessSharedOn', { date: fmt(access.grantedAt) })}</p>
@@ -345,7 +345,7 @@ function ApplicationCard({
             {t('applied', 'withdrawBody', { company: item.companyName })}
           </p>
           {error && (
-            <p role="alert" className="mt-2 text-xs font-semibold text-red-600">
+            <p role="alert" className="mt-2 text-xs font-semibold text-red-400">
               {t('applied', 'withdrawError')}
             </p>
           )}
@@ -441,7 +441,7 @@ function Recommendations({
           {t('applied', 'recTitle')}
         </h2>
         {newJobsCount > 0 && (
-          <span className="rounded-pill bg-orange px-2.5 py-1 text-xs font-bold text-white">
+          <span className="rounded-pill bg-orange px-2.5 py-1 text-xs font-bold text-[#011c40]">
             {t('applied', 'recNew', { count: newJobsCount })}
           </span>
         )}
@@ -450,7 +450,7 @@ function Recommendations({
       {!hasExpertise ? (
         <p className="glass mt-3 p-card text-sm text-muted">{t('applied', 'recNoExpertise')}</p>
       ) : recommended === null ? (
-        <p role="alert" className="mt-3 text-sm font-semibold text-red-600">
+        <p role="alert" className="mt-3 text-sm font-semibold text-red-400">
           {t('applied', 'loadError')}
         </p>
       ) : recommended.length === 0 ? (

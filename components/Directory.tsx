@@ -130,7 +130,7 @@ function DirectoryInner({ initialEntries, initialQuery }: { initialEntries: Dire
 
             <form
               onSubmit={handleSearchSubmit}
-              className="mt-6 flex items-center gap-2 rounded-pill bg-white/90 p-1.5 shadow-[0_14px_34px_-14px_rgba(26,26,26,0.45)] sm:mt-8"
+              className="glass mt-6 flex items-center gap-2 rounded-pill p-1.5 sm:mt-8"
             >
               <input
                 value={query}

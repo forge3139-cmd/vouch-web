@@ -40,7 +40,7 @@ export default function MapPickerSheet({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/55" onClick={onClose} aria-hidden="true" />
       <div className="glass relative z-10 flex w-full max-w-[560px] flex-col rounded-t-3xl rounded-b-none p-4 pb-6 shadow-float">
         <div className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-card-border" />
         <div className="mb-3 flex items-center justify-between">

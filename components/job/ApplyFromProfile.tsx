@@ -161,7 +161,7 @@ export default function ApplyFromProfile({
       {preview.status === 'loading' && <p className="mt-8 text-sm text-muted">{t('passport', 'loading')}</p>}
 
       {preview.status === 'error' && (
-        <p role="alert" className="mt-8 text-sm font-semibold text-red-600">
+        <p role="alert" className="mt-8 text-sm font-semibold text-red-400">
           {t('passport', 'loadError')}
         </p>
       )}
@@ -351,7 +351,7 @@ export default function ApplyFromProfile({
                 </div>
 
                 {error && (
-                  <p role="alert" className="mt-4 text-sm font-semibold text-red-600">
+                  <p role="alert" className="mt-4 text-sm font-semibold text-red-400">
                     {t('job', ERROR_KEYS[error])}
                   </p>
                 )}
@@ -421,7 +421,7 @@ function ListEditor({
       {current.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1.5">
           {current.map((v) => (
-            <span key={v} className="flex items-center gap-1.5 rounded-pill bg-ink px-3 py-1.5 text-xs font-bold text-white">
+            <span key={v} className="flex items-center gap-1.5 rounded-pill bg-orange px-3 py-1.5 text-xs font-bold text-[#011c40]">
               {v}
               <button type="button" onClick={() => setCurrent(current.filter((x) => x !== v))} aria-label={`Remove ${v}`}>
                 ×
@@ -518,7 +518,7 @@ function PortfolioEditor({ items, onChanged }: { items: PortfolioItemResult[]; o
                 <div className="h-10 w-10 rounded-lg bg-black/5" />
               )}
               <span className="flex-1 text-sm text-ink">{item.title}</span>
-              <button type="button" onClick={() => handleDelete(item.id)} className="text-xs font-bold text-red-600">
+              <button type="button" onClick={() => handleDelete(item.id)} className="text-xs font-bold text-red-400">
                 ×
               </button>
             </li>

@@ -90,7 +90,7 @@ export default function OpenRequestView({
       </div>
 
       {loadFailed ? (
-        <p role="alert" className="mt-6 text-sm font-semibold text-red-600">{t('openRequest', 'errGeneric')}</p>
+        <p role="alert" className="mt-6 text-sm font-semibold text-red-400">{t('openRequest', 'errGeneric')}</p>
       ) : myItems.length === 0 ? (
         <p className="mt-6 text-sm text-muted">{t('openRequest', 'myRequestsEmpty')}</p>
       ) : (
@@ -351,7 +351,7 @@ function OpenRequestForm({ onBack, onSent }: { onBack: () => void; onSent: (id: 
           <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="field w-full p-4 text-base" />
         </fieldset>
 
-        {error && <p role="alert" className="text-sm font-semibold text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-sm font-semibold text-red-400">{error}</p>}
       </div>
 
       <div className="mt-8">
@@ -414,7 +414,7 @@ function OpenRequestDetailPanel({ id, onBack }: { id: string; onBack: () => void
       {loading ? (
         <p className="mt-8 text-sm text-muted">{t('passport', 'loading')}</p>
       ) : !detail ? (
-        <p role="alert" className="mt-8 text-sm font-semibold text-red-600">{t('openRequest', 'errGeneric')}</p>
+        <p role="alert" className="mt-8 text-sm font-semibold text-red-400">{t('openRequest', 'errGeneric')}</p>
       ) : (
         <>
           <h1 className="mt-6 text-2xl font-extrabold text-ink">{detail.title}</h1>

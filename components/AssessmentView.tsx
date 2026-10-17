@@ -236,7 +236,7 @@ export default function AssessmentView({
   if (!result.ok) {
     return (
       <div className="form-shell">
-        <p className="mt-8 text-sm font-semibold text-red-600">
+        <p className="mt-8 text-sm font-semibold text-red-400">
           {result.error === 'signedOut'
             ? 'Sign in to see this.'
             : result.error === 'notInvited'
@@ -364,7 +364,7 @@ export default function AssessmentView({
         })}
       </div>
 
-      {error && <p role="alert" className="mt-4 text-sm font-semibold text-red-600">{error}</p>}
+      {error && <p role="alert" className="mt-4 text-sm font-semibold text-red-400">{error}</p>}
 
       {submitted && !!view.companyFeedback && (
         <div className="glass mt-4 p-card">
@@ -407,7 +407,7 @@ function UploadRow({
 }) {
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className={status === 'uploaded' ? 'text-green' : status === 'failed' ? 'text-red-600' : 'text-muted'}>
+      <span className={status === 'uploaded' ? 'text-green' : status === 'failed' ? 'text-red-400' : 'text-muted'}>
         {status === 'uploading' ? 'Uploading…' : status === 'uploaded' ? label : 'Upload failed'}
       </span>
       {status === 'failed' && (
